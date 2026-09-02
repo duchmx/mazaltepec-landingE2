@@ -1,0 +1,31 @@
+{
+  "name": "mazaltepec-landing-e2",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "next": "^15.5.25",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.1.13",
+    "@types/node": "22.18.1",
+    "@types/react": "19.1.13",
+    "@types/react-dom": "19.1.9",
+    "tailwindcss": "4.1.13",
+    "typescript": "5.9.2",
+    "vitest": "^4.1.11"
+  },
+  "allowScripts": {
+    "@tailwindcss/oxide@4.1.13": true,
+    "esbuild@0.28.2": true,
+    "sharp@0.34.5": true
+  }
+}

@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* Design system — see README. Do not add colors outside this scale. */
+@theme {
+  --color-pine-800: #184a3a;
+  --color-pine-700: #1f5e49;
+  --color-pine-600: #2a7058;
+  --color-pine-100: #d5e8e0;
+  --color-pine-50: #eef6f3;
+
+  --color-leaf-700: #416c3f;
+  --color-leaf-400: #82b280;
+  --color-leaf-100: #dbe6db;
+
+  --color-camel-700: #7e683d;
+  --color-camel-500: #b3996b;
+  --color-camel-200: #e8dcc7;
+
+  --color-cream-50: #f7f8f1;
+  --color-cream-100: #eff0e2;
+  --color-cream-200: #e2e2d6;
+  --color-cream-300: #d2d2c4;
+
+  --color-ink-900: #14201b;
+  --color-ink-600: #4b5a52;
+  --color-ink-400: #8a958d;
+  --color-ink-200: #c6ccc8;
+  --color-ink-100: #e0e4e1;
+
+  --radius-brand: 0.75rem;
+
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-brand: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-cream-50);
+    color: var(--color-ink-900);
+    font-weight: 300;
+  }
+
+  /* Single transition curve and duration across the whole page. */
+  a,
+  button,
+  input,
+  [data-lot] {
+    transition-duration: 120ms;
+    transition-timing-function: var(--ease-brand);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-pine-800);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
