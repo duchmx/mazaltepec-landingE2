@@ -64,3 +64,40 @@ body {
   outline: 2px solid var(--color-pine-800);
   outline-offset: 2px;
 }
+
+/* ── Media marquee ─────────────────────────────────────────────────────────
+   The track carries the slides twice, so translating it by half its width
+   returns it to its starting frame and the loop is seamless. Transform only —
+   no layout, no paint, and nothing that reacts to scroll position.
+
+   The seam is only exact while the track's left padding equals its gap: the
+   width is then pad + 2N*slide + (2N-1)*gap = 2N*(slide + gap), and half of
+   that is precisely one set plus its trailing gap. Keep pl-* and gap-* in
+   step if you change either, or the loop will visibly jump. */
+
+@keyframes media-marquee-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+.media-marquee__track {
+  animation: media-marquee-drift var(--marquee-duration, 80s) linear infinite;
+  will-change: transform;
+}
+
+/* Let people stop it to look at something. */
+.media-marquee:hover .media-marquee__track,
+.media-marquee:focus-within .media-marquee__track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-marquee {
+    overflow-x: auto;
+  }
+
+  .media-marquee__track {
+    animation: none;
+    will-change: auto;
+  }
+}

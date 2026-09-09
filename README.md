@@ -169,6 +169,12 @@ To go live with an asset:
    />
    ```
 
+For the subdivision marquee, the slides come from `subdivision.mediaLabels` in
+`content/copy.ts` — the list length drives everything, and tones cycle on their own. Its
+speed is the `duration` prop on `<MediaMarquee>` (seconds for one full pass; higher is
+slower). The track's left padding must stay equal to its gap or the loop will visibly
+jump — the reason is commented in `app/globals.css`.
+
 3. Keep `ratio` and `tone` as they are — the ratio is the locked layout and the tone stays as
    the fallback color. Write `alt` in Spanish, describing what is in the frame.
 4. For the hero, add `priority` so it is not lazy-loaded.

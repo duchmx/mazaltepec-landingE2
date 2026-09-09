@@ -81,10 +81,17 @@ export const subdivision = {
   ],
   cta: "Conoce el fraccionamiento →",
   ctaHref: "https://www.mazaltepec.com",
-  // PLACEHOLDER: media slots — two 4/5 stills of the built subdivision.
+  /** Screen-reader name for the marquee, which is otherwise decorative. */
+  carouselLabel: "Imágenes del fraccionamiento",
+  // PLACEHOLDER: media slots — 4/5 stills and renders of the built subdivision, in the
+  // order they scroll. Add or remove entries freely; the marquee adapts to any count.
   mediaLabels: [
-    "FRACCIONAMIENTO A — parque y senderos",
-    "FRACCIONAMIENTO B — alberca y áreas sociales",
+    "FRACCIONAMIENTO 1 — parque y senderos",
+    "FRACCIONAMIENTO 2 — alberca",
+    "FRACCIONAMIENTO 3 — cancha de pádel",
+    "FRACCIONAMIENTO 4 — gimnasio al aire libre",
+    "FRACCIONAMIENTO 5 — acceso controlado",
+    "FRACCIONAMIENTO 6 — calles habitadas",
   ],
 } as const;
 

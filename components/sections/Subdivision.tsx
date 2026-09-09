@@ -1,11 +1,11 @@
-import MediaSlot from "@/components/MediaSlot";
-import { buttonSecondary, eyebrow, headline, sectionShell } from "@/components/ui";
+import MediaMarquee from "@/components/MediaMarquee";
+import { buttonSecondary, eyebrow, headline } from "@/components/ui";
 import { subdivision } from "@/content/copy";
 
 export default function Subdivision() {
   return (
-    <section id="el-fraccionamiento" className="bg-cream-50">
-      <div className={sectionShell}>
+    <section id="el-fraccionamiento" className="bg-cream-50 py-16 sm:py-24">
+      <div className="mx-auto w-full max-w-5xl px-5 sm:px-8">
         <p className={eyebrow}>{subdivision.eyebrow}</p>
         <h2 className={headline}>{subdivision.headline}</h2>
 
@@ -18,31 +18,25 @@ export default function Subdivision() {
           ))}
         </ul>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <MediaSlot
-            ratio="4/5"
-            tone="pine-700"
-            label={subdivision.mediaLabels[0]}
-            className="rounded-[0.75rem]"
-          />
-          <MediaSlot
-            ratio="4/5"
-            tone="leaf-400"
-            label={subdivision.mediaLabels[1]}
-            className="rounded-[0.75rem]"
-          />
-        </div>
+      </div>
 
-        <div className="mt-9">
-          <a
-            href={subdivision.ctaHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonSecondary}
-          >
-            {subdivision.cta}
-          </a>
-        </div>
+      {/* Full-bleed: the marquee runs edge to edge, outside the centred text column. */}
+      <div className="mt-10">
+        <MediaMarquee
+          labels={subdivision.mediaLabels}
+          ariaLabel={subdivision.carouselLabel}
+        />
+      </div>
+
+      <div className="mx-auto mt-10 w-full max-w-5xl px-5 sm:px-8">
+        <a
+          href={subdivision.ctaHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonSecondary}
+        >
+          {subdivision.cta}
+        </a>
       </div>
     </section>
   );
