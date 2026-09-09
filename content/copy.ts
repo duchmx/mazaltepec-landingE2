@@ -17,12 +17,12 @@ export const site = {
 export const topBar = {
   /** The only nav item on the page: back to the main subdivision site. */
   homeLabel: "Volver a mazaltepec.com",
-  homeHref: "https://mazaltepec.com",
+  homeHref: "https://wwww.mazaltepec.com",
 } as const;
 
 export const hero = {
   eyebrow: "ETAPA 2",
-  headline: "Los últimos lotes de Jardines de Mazaltepec.",
+  headline: "Los últimos lotes residenciales<br>en Jardines de Mazaltepec.",
   body: [
     "Un fraccionamiento que ya está construido, habitado y funcionando.",
     "En la zona Country de Villahermosa.",
@@ -32,7 +32,7 @@ export const hero = {
   // "Precio de preventa con descuento de contado." Using the hero wording, which avoids
   // naming a discount. Replace this string if the longer note is the one you want.
   priceNote: "Precio de contado.",
-  ctaWhatsApp: "Hablar por WhatsApp",
+  ctaWhatsApp: "Contáctanos",
   ctaAvailability: "Ver disponibilidad",
   // PLACEHOLDER: media slot — hero aerial video loop, 16/9, pine-800 until it arrives.
   mediaLabel: "HERO — aerial video loop",
@@ -80,7 +80,7 @@ export const subdivision = {
     "Comunidad ya habitada, con mantenimiento en operación",
   ],
   cta: "Conoce el fraccionamiento →",
-  ctaHref: "https://mazaltepec.com",
+  ctaHref: "https://www.mazaltepec.com",
   // PLACEHOLDER: media slots — two 4/5 stills of the built subdivision.
   mediaLabels: [
     "FRACCIONAMIENTO A — parque y senderos",
@@ -101,7 +101,7 @@ export const visit = {
   mediaLabel: "VISITA — mapa de ubicación",
   directions: "Cómo llegar →",
   // PLACEHOLDER: replace with the exact Google Maps pin for the Etapa 2 sales access.
-  directionsHref: "https://maps.google.com/?q=Jardines+de+Mazaltepec+Villahermosa",
+  directionsHref: "https://www.google.com/maps/place/Jardines+de+Mazaltepec/@18.024908,-92.9877243,944m/data=!3m1!1e3!4m6!3m5!1s0x85ee79195e241269:0xf63e467912e524af!8m2!3d18.024908!4d-92.9877243!16s%2Fg%2F11gmvdjqcz?entry=ttu&g_ep=EgoyMDI2MDkwMi4wIKXMDSoASAFQAw%3D%3D",
   form: {
     name: "Nombre",
     phone: "Teléfono / WhatsApp",
@@ -123,17 +123,17 @@ export const visit = {
 export const footer = {
   /** Rendered as the official lockup; kept as the logo's alt text. */
   brand: "Jardines de Mazaltepec",
-  developer: "Un desarrollo de Arvore S.A. de C.V.",
+  developer: "Un desarrollo de Arvore",
   phone: "993 228 2449",
   privacy: "Aviso de privacidad",
   // PLACEHOLDER: point at the published aviso de privacidad.
-  privacyHref: "https://mazaltepec.com/aviso-de-privacidad",
+  privacyHref: "https://www.mazaltepec.com",
   disclaimer:
     "Imágenes ilustrativas. Precios y disponibilidad sujetos a cambio sin previo aviso.",
 } as const;
 
 export const sticky = {
-  cta: "Hablar por WhatsApp",
+  cta: "Contáctanos",
 } as const;
 
 /** Pre-filled WhatsApp messages. `{lot}` and `{ref}` are filled by lib/whatsapp.ts. */
