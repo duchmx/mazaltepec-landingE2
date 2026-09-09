@@ -17,17 +17,18 @@ describe("lot inventory", () => {
     expect(totalSellableArea()).toBe(2220.76);
   });
 
-  it("excludes the third-party lots from inventory", () => {
-    expect(SELLABLE_LOTS.map((lot) => lot.id)).not.toContain("L-76");
+  it("excludes the third-party lot from inventory", () => {
     expect(SELLABLE_LOTS.map((lot) => lot.id)).not.toContain("L-77");
   });
 
-  it("always renders third-party lots as sold", () => {
-    for (const id of ["L-76", "L-77"]) {
-      const lot = getLot(id);
-      expect(lot).toBeDefined();
-      expect(effectiveStatus(lot!)).toBe("vendido");
-    }
+  it("always renders the third-party lot as sold", () => {
+    const lot = getLot("L-77");
+    expect(lot).toBeDefined();
+    expect(effectiveStatus(lot!)).toBe("vendido");
+  });
+
+  it("omits L-76, which falls outside the plan and has no artwork", () => {
+    expect(getLot("L-76")).toBeUndefined();
   });
 
   it("counts only sellable lots marked disponible", () => {

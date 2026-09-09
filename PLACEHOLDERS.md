@@ -27,8 +27,10 @@ All other Spanish copy is final as given and lives in `content/copy.ts`.
 Not placeholders — do not change without a source document:
 
 - Lot areas. The 13 sellable lots sum to exactly 2,220.76 m², asserted in `tests/lots.test.ts`.
-- L-76 and L-77 are third-party owned: `inInventory: false`, always rendered as sold and
-  excluded from the counter.
+- L-77 is third-party owned: `inInventory: false`, always rendered as sold and excluded from
+  the counter. L-76 falls outside the plan's polygon and is not in the file at all.
+- Lot label anchors in `data/lots.ts` are area centroids in artwork viewBox units, checked
+  visually against the plan. Retune them only if the artwork is replaced.
 - The two money figures (`$1,560,000`, `$360,000`) are the only pricing allowed on the page.
 
 ---
@@ -50,6 +52,13 @@ README, "Replacing a MediaSlot with real media".
 
 ## Plot map artwork
 
-`components/plot-map/artwork.tsx` is provisional geometry — a schematic grid, not the real
-subdivision layout. It is replaced wholesale by the architect's file; nothing else changes.
-See README, "Swapping in the architect's SVG".
+The map is real, not a placeholder: `components/plot-map/artwork.tsx` carries the traced lot
+polygons and points at `public/plano-base.webp`, the rendered plan they sit on. Both share
+the 211 × 265.224 frame, and `tests/artwork.test.tsx` fails if that registration drifts.
+
+It is still isolated to one file, so the architect's final drawing replaces it wholesale
+without touching anything else. See README, "Swapping in the architect's SVG".
+
+| What | File | Replace with |
+|---|---|---|
+| Traced lot polygons and base render | `components/plot-map/artwork.tsx`, `public/plano-base.webp` | The architect's delivered drawing, when it lands. Lot ids, numbers and areas stay ours — they are never baked into the artwork. |

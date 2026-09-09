@@ -1,32 +1,49 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { availability } from "@/content/copy";
 import { effectiveStatus, formatArea, getLot, LOTS, type LotStatus } from "@/data/lots";
-import { PLOT_MAP_VIEW_BOX, PlotMapArtwork } from "@/components/plot-map/artwork";
+import {
+  PLOT_MAP_BASE,
+  PLOT_MAP_VIEW_BOX,
+  PlotMapArtwork,
+} from "@/components/plot-map/artwork";
 import { trackWhatsAppClick } from "@/lib/analytics";
 import { getAttribution } from "@/lib/attribution";
 import { whatsappLotUrl } from "@/lib/whatsapp";
 
 const MAP_ID = "plot-map";
 
-const STATUS_FILL: Record<LotStatus, string> = {
-  disponible: "var(--color-leaf-400)",
-  apartado: "var(--color-camel-200)",
-  vendido: "var(--color-ink-200)",
+/**
+ * Lot tinting sits ON TOP of the rendered plan, so an available lot is left alone and the
+ * artwork's own green shows through. Sold lots are washed back toward the page surface;
+ * reserved lots take the camel accent. Never a full-strength fill — the drawing must read.
+ */
+const STATUS_TINT: Record<LotStatus, { fill: string; opacity: number }> = {
+  disponible: { fill: "transparent", opacity: 0 },
+  apartado: { fill: "var(--color-camel-500)", opacity: 0.5 },
+  vendido: { fill: "var(--color-cream-50)", opacity: 0.72 },
+};
+
+/** Legend swatches approximate what each status looks like over the plan's green. */
+const LEGEND_SWATCH: Record<LotStatus, string> = {
+  disponible: "#8CA85F",
+  apartado: "#A8A177",
+  vendido: "#DCE0D2",
 };
 
 const LABEL_FILL: Record<LotStatus, string> = {
-  disponible: "var(--color-pine-800)",
-  apartado: "var(--color-camel-700)",
-  vendido: "var(--color-ink-400)",
+  disponible: "var(--color-cream-50)",
+  apartado: "var(--color-ink-900)",
+  vendido: "var(--color-ink-600)",
 };
 
 type LotLabel = { id: string; x: number; y: number; status: LotStatus };
 
 /**
- * Status colors are emitted as CSS keyed on the artwork's own `id` attributes, so the map
- * is painted correctly on the server and stays correct after the artwork is swapped.
+ * Status paint is emitted as CSS keyed on the artwork's own `id` attributes, so the map is
+ * correct on the server and stays correct after the artwork is swapped.
  */
 function statusStyles(): string {
   const byStatus: Record<LotStatus, string[]> = { disponible: [], apartado: [], vendido: [] };
@@ -36,19 +53,19 @@ function statusStyles(): string {
 
   const fills = (Object.keys(byStatus) as LotStatus[])
     .filter((status) => byStatus[status].length > 0)
-    .map(
-      (status) =>
-        `${byStatus[status].join(",")}{fill:${STATUS_FILL[status]};stroke:var(--color-cream-50);stroke-width:2}`,
-    )
+    .map((status) => {
+      const tint = STATUS_TINT[status];
+      return `${byStatus[status].join(",")}{fill:${tint.fill};fill-opacity:${tint.opacity};stroke:var(--color-cream-50);stroke-opacity:0.55;stroke-width:0.4}`;
+    })
     .join("");
 
   // Interaction states come after the fills so they win at equal specificity.
   const states = [
     `#${MAP_ID} [data-lot-status]{outline:none}`,
-    `#${MAP_ID} [data-lot-status="disponible"]{cursor:pointer;transition:fill 120ms cubic-bezier(0.2,0,0,1)}`,
-    `#${MAP_ID} [data-lot-status="disponible"]:hover{fill:var(--color-pine-600)}`,
-    `#${MAP_ID} [data-lot-selected="true"]{fill:var(--color-pine-800)}`,
-    `#${MAP_ID} [data-lot-status]:focus-visible{stroke:var(--color-pine-800);stroke-width:4}`,
+    `#${MAP_ID} [data-lot-status="disponible"]{cursor:pointer;transition:fill-opacity 120ms cubic-bezier(0.2,0,0,1)}`,
+    `#${MAP_ID} [data-lot-status="disponible"]:hover{fill:var(--color-pine-800);fill-opacity:0.28}`,
+    `#${MAP_ID} [data-lot-selected="true"]{fill:var(--color-pine-800);fill-opacity:0.55;stroke:var(--color-cream-50);stroke-opacity:1;stroke-width:0.9}`,
+    `#${MAP_ID} [data-lot-status]:focus-visible{stroke:var(--color-ink-900);stroke-opacity:1;stroke-width:1.4}`,
     `@media (prefers-reduced-motion: reduce){#${MAP_ID} [data-lot-status]{transition:none}}`,
   ].join("");
 
@@ -58,7 +75,7 @@ function statusStyles(): string {
 export default function PlotMap() {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selected, setSelected] = useState<string | null>(null);
-  const [labels, setLabels] = useState<LotLabel[]>([]);
+  const [measured, setMeasured] = useState<LotLabel[]>([]);
   const styles = useMemo(statusStyles, []);
 
   const selectedLot = selected ? getLot(selected) : undefined;
@@ -121,25 +138,40 @@ export default function PlotMap() {
     return () => cleanups.forEach((cleanup) => cleanup());
   }, [select]);
 
-  /** Lot numbers are positioned from the artwork's geometry, never baked into it. */
+  /**
+   * Lot numbers are positioned from the data's anchors, never baked into the artwork.
+   * Anchors are optional, so anything without one falls back to its path's bounding box —
+   * which keeps a freshly swapped drawing readable before the anchors are retuned.
+   */
   useLayoutEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
+    if (LOTS.every((lot) => lot.anchor)) return;
 
-    const measured: LotLabel[] = [];
+    const found: LotLabel[] = [];
     for (const lot of LOTS) {
+      if (lot.anchor) continue;
       const node = svg.querySelector<SVGGraphicsElement>(`[id="${lot.id}"]`);
       if (!node) continue;
       const box = node.getBBox();
-      measured.push({
+      found.push({
         id: lot.id,
         x: box.x + box.width / 2,
         y: box.y + box.height / 2,
         status: effectiveStatus(lot),
       });
     }
-    setLabels(measured);
+    setMeasured(found);
   }, []);
+
+  const labels: LotLabel[] = useMemo(() => {
+    const fallback = new Map(measured.map((label) => [label.id, label]));
+    return LOTS.flatMap((lot) => {
+      const point = lot.anchor ?? fallback.get(lot.id);
+      if (!point) return [];
+      return [{ id: lot.id, x: point.x, y: point.y, status: effectiveStatus(lot) }];
+    });
+  }, [measured]);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -158,45 +190,60 @@ export default function PlotMap() {
     <div>
       <style>{styles}</style>
 
-      <svg
-        id={MAP_ID}
-        ref={svgRef}
-        viewBox={PLOT_MAP_VIEW_BOX}
-        className="w-full rounded-[0.75rem] border border-cream-300 bg-cream-100"
-        role="group"
-        aria-label={availability.mapTitle}
-      >
-        <title>{availability.mapTitle}</title>
-        <desc>{availability.mapDescription}</desc>
+      <div className="relative mx-auto w-full max-w-[36rem] overflow-hidden rounded-[0.75rem] border border-cream-300 bg-cream-100">
+        {PLOT_MAP_BASE ? (
+          <Image
+            src={PLOT_MAP_BASE.src}
+            width={PLOT_MAP_BASE.width}
+            height={PLOT_MAP_BASE.height}
+            alt=""
+            aria-hidden="true"
+            sizes="(min-width: 640px) 36rem, 100vw"
+            className="block h-auto w-full select-none"
+            priority={false}
+          />
+        ) : null}
 
-        <PlotMapArtwork />
+        <svg
+          id={MAP_ID}
+          ref={svgRef}
+          viewBox={PLOT_MAP_VIEW_BOX}
+          className="absolute inset-0 h-full w-full"
+          role="group"
+          aria-label={availability.mapTitle}
+        >
+          <title>{availability.mapTitle}</title>
+          <desc>{availability.mapDescription}</desc>
 
-        {/* Lot numbers, drawn over the artwork. The paths carry the accessible names. */}
-        <g aria-hidden="true" pointerEvents="none">
-          {labels.map((label) => (
-            <text
-              key={label.id}
-              x={label.x}
-              y={label.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="26"
-              fontWeight="500"
-              fill={label.id === selected ? "var(--color-cream-50)" : LABEL_FILL[label.status]}
-            >
-              {label.id.replace("L-", "")}
-            </text>
-          ))}
-        </g>
-      </svg>
+          <PlotMapArtwork />
+
+          {/* Lot numbers, drawn over the artwork. The paths carry the accessible names. */}
+          <g aria-hidden="true" pointerEvents="none">
+            {labels.map((label) => (
+              <text
+                key={label.id}
+                x={label.x}
+                y={label.y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize="7"
+                fontWeight="500"
+                fill={label.id === selected ? "var(--color-cream-50)" : LABEL_FILL[label.status]}
+              >
+                {label.id.replace("L-", "")}
+              </text>
+            ))}
+          </g>
+        </svg>
+      </div>
 
       <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-600">
-        {(Object.keys(STATUS_FILL) as LotStatus[]).map((key) => (
+        {(Object.keys(STATUS_TINT) as LotStatus[]).map((key) => (
           <li key={key} className="flex items-center gap-2">
             <span
               aria-hidden="true"
               className="inline-block h-3 w-3 rounded-sm border border-cream-300"
-              style={{ background: STATUS_FILL[key] }}
+              style={{ background: LEGEND_SWATCH[key] }}
             />
             {availability.legend[key]}
           </li>

@@ -52,8 +52,10 @@ Lot status is a hand-edited record — no database, no admin, no API.
 
 Rules baked in:
 
-- L-76 and L-77 are third-party owned (`inInventory: false`). They always render as sold and
-  never count toward `X de 13 lotes disponibles`. Leave them alone.
+- L-77 is third-party owned (`inInventory: false`). It always renders as sold and never
+  counts toward `X de 13 lotes disponibles`. Leave it alone.
+- L-76 is not in the file at all: it falls outside the plan's polygon, so it has no path in
+  the artwork and nothing to render. Do not add it back without artwork to match.
 - Areas are legal figures. The 13 sellable lots must sum to 2,220.76 m² — `npm test` fails if
   an edit breaks that.
 
@@ -61,34 +63,66 @@ Rules baked in:
 
 ## Swapping in the architect's SVG
 
-The plot map artwork is isolated in **one file**: `components/plot-map/artwork.tsx`. Status
-colors, lot numbers, click handling and accessibility are applied by
+The plot map is two layers, both declared in **one file**, `components/plot-map/artwork.tsx`:
+
+- `PLOT_MAP_BASE` — the rendered plan drawing (`public/plano-base.webp`), drawn underneath
+  via `next/image` and marked decorative.
+- `PlotMapArtwork()` — one invisible `<path>` per lot, drawn on top, registered to the base
+  render in the same `PLOT_MAP_VIEW_BOX` frame.
+
+Status tints, lot numbers, click handling and accessibility are applied by
 `components/plot-map/PlotMap.tsx`, which finds each lot by `id`. Replacing the artwork does
 not touch that file.
 
+Available lots are left untinted so the drawing's own green shows through; reserved lots take
+a half-strength camel wash and sold lots a cream wash. Nothing ever fills a lot solid — the
+plan has to stay readable underneath.
+
 The artwork the architect delivers must satisfy three things:
 
-1. **One closed `<path>` per lot**, each with `id="L-78"` … `id="L-90"` (plus `L-76`, `L-77`).
+1. **One closed `<path>` per lot**, each with `id="L-78"` … `id="L-90"`, plus `L-77`.
 2. **No lot numbers, areas or status colors baked in** — our code draws those. Fills may be
    left off entirely; ours override them.
-3. Everything else (streets, green areas, block outlines) is decorative and may be any
-   shape or color.
+3. The paths must share one coordinate frame with whatever drawing sits under them.
 
-Steps:
+### If the delivery is paths plus a separate rendered plan (today's setup)
 
-1. Open the delivered `.svg` in a text editor.
-2. Copy the `viewBox` value into `PLOT_MAP_VIEW_BOX` in `artwork.tsx`.
-3. Replace the contents of `PlotMapArtwork()` with everything *inside* the file's root
-   `<svg>` element — drop the `<svg>` wrapper itself, and drop any `<title>`/`<desc>`
-   (`PlotMap.tsx` supplies those in Spanish).
-4. Convert SVG attributes to JSX: `stroke-width` → `strokeWidth`, `fill-rule` → `fillRule`,
-   `class` → `className`, `xlink:href` → `href`. Self-close empty elements.
-5. Run `npm run dev` and check: all 15 lots are colored by status, each carries a number,
-   available lots respond to click and to Enter/Space when focused, and L-76 / L-77 are grey
-   and not focusable.
+1. Optimise the render and put it in `public/`. From the repo root:
+
+   ```bash
+   node -e "require('sharp')('/path/to/plan.png').resize({width:1600}).webp({quality:82}).toFile('public/plano-base.webp').then(i=>console.log(i.width,i.height,i.size))"
+   ```
+
+2. Update `PLOT_MAP_BASE` in `artwork.tsx` with the new `src` and the printed `width`/
+   `height`. `npm test` fails if its aspect ratio drifts from `PLOT_MAP_VIEW_BOX` by more
+   than 0.5%, which is what keeps the paths registered to the drawing.
+3. Copy the paths' own `viewBox` into `PLOT_MAP_VIEW_BOX`.
+4. Replace the `<path>` elements inside `PlotMapArtwork()` with the delivered ones.
+
+### If the delivery is a single SVG containing the drawing
+
+1. Set `PLOT_MAP_BASE` to `null` and delete the old render from `public/`.
+2. Copy the file's `viewBox` into `PLOT_MAP_VIEW_BOX`.
+3. Replace the contents of `PlotMapArtwork()` with everything *inside* the root `<svg>` —
+   drop the `<svg>` wrapper, and drop any `<title>`/`<desc>` (`PlotMap.tsx` supplies those
+   in Spanish). Keep the lot `<path>` elements last so they sit above the drawing.
+
+### Either way
+
+Convert SVG attributes to JSX: `stroke-width` → `strokeWidth`, `fill-rule` → `fillRule`,
+`class` → `className`, `xlink:href` → `href`. Self-close empty elements. Then retune the lot
+number positions: each lot in `data/lots.ts` carries an `anchor` in viewBox units, the area
+centroid of its path. Delete the stale anchors and the map falls back to measuring each
+path's bounding box, which is close enough to check registration; add them back for
+irregular lots, where a bounding-box centre can land outside the polygon.
+
+Finally run `npm run dev` and check: all 14 lots carry a number that sits inside their own
+outline, available lots respond to click and to Enter/Space when focused, L-77 reads as sold
+and is not focusable, and the counter still says `13 de 13 lotes disponibles`.
 
 If a lot id is missing from the artwork, that lot is simply skipped — the page still renders,
-so check for all 15.
+so check for all 14. `npm test` asserts the artwork and `data/lots.ts` name exactly the same
+set of lots.
 
 ## Replacing a MediaSlot with real media
 

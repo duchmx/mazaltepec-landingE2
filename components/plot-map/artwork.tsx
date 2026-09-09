@@ -1,46 +1,45 @@
 /**
- * PLACEHOLDER: provisional plot-map artwork. Replace this file wholesale with the
- * architect's SVG — it is the only file that needs to change. See README, "Swapping in
- * the architect's SVG".
+ * Plot-map artwork for Etapa 2. This is the ONLY file to replace when the architect
+ * delivers the final drawing — see README, "Swapping in the architect's SVG".
  *
  * Contract with the rest of the app:
- *  - one closed `<path>` per lot, carrying `id="L-78"` … `id="L-90"`;
+ *  - one closed <path> per lot, carrying id="L-77" … id="L-90";
  *  - no lot numbers, areas or status colors baked in — our code renders and paints those;
- *  - `PLOT_MAP_VIEW_BOX` matches the artwork's own viewBox.
+ *  - PLOT_MAP_VIEW_BOX matches the artwork's own viewBox;
+ *  - PLOT_MAP_BASE points at the rendered plan that sits under the paths, or is null when
+ *    the artwork carries its own drawing.
  *
- * Geometry here is schematic and does not represent the real subdivision layout.
+ * Geometry is real: the lot polygons are traced from the authorised lotification plan and
+ * registered to the base render, which shares the same 211 × 265.224 frame.
  */
 
-export const PLOT_MAP_VIEW_BOX = "0 0 900 560";
+export const PLOT_MAP_VIEW_BOX = "0 0 211 265.224";
 
+/** Rendered plan drawn beneath the interactive paths. Intrinsic size drives next/image. */
+export const PLOT_MAP_BASE = {
+  src: "/plano-base.webp",
+  width: 1600,
+  height: 2011,
+} as const;
+
+/** Lot polygons only. Everything else on the plan lives in the base render. */
 export function PlotMapArtwork() {
   return (
-    <g>
-      {/* Street and block context — decorative, never interactive. */}
-      <rect x="0" y="0" width="900" height="560" fill="var(--color-cream-100)" />
-      <rect x="0" y="220" width="900" height="80" fill="var(--color-cream-300)" />
-      <rect x="0" y="256" width="900" height="2" fill="var(--color-cream-50)" />
-      <rect x="40" y="20" width="828" height="24" fill="var(--color-leaf-100)" />
-      <rect x="40" y="476" width="724" height="24" fill="var(--color-leaf-100)" />
-
-      {/* Lots. Top row. */}
-      <path id="L-76" d="M40 60 H140 V220 H40 Z" />
-      <path id="L-77" d="M144 60 H244 V220 H144 Z" />
-      <path id="L-78" d="M248 60 H348 V220 H248 Z" />
-      <path id="L-79" d="M352 60 H452 V220 H352 Z" />
-      <path id="L-80" d="M456 60 H556 V220 H456 Z" />
-      <path id="L-81" d="M560 60 H660 V220 H560 Z" />
-      <path id="L-82" d="M664 60 H764 V220 H664 Z" />
-      <path id="L-83" d="M768 60 H868 V220 H768 Z" />
-
-      {/* Lots. Bottom row. */}
-      <path id="L-84" d="M40 300 H140 V460 H40 Z" />
-      <path id="L-85" d="M144 300 H244 V460 H144 Z" />
-      <path id="L-86" d="M248 300 H348 V460 H248 Z" />
-      <path id="L-87" d="M352 300 H452 V460 H352 Z" />
-      <path id="L-88" d="M456 300 H556 V460 H456 Z" />
-      <path id="L-89" d="M560 300 H660 V460 H560 Z" />
-      <path id="L-90" d="M664 300 H764 V460 H664 Z" />
+    <g id="lotes" fill="currentColor" stroke="none">
+      <path id="L-77" d="M 24.642,66.3 L 49.002,54.224999999999994 L 65.06700000000001,94.02 C 65.06700000000001,94.02 58.37850000000001,96.771 58.2945,96.80250000000002 C 55.564499999999995,97.67295000000003 55.0395,98.37750000000001 50.99699999999999,97.11540000000001 C 46.99649999999999,96.05490000000002 40.28699999999999,97.82205 38.501999999999995,100.30740000000002 L 24.642,66.30000000000001" />
+      <path id="L-78" d="M 49.002,54.435 L 74.30700000000002,42.465 L 90.162,84.045 L 65.06700000000001,94.335 L 49.00200000000001,54.43499999999999" />
+      <path id="L-79" d="M 74.202,42.36 L 77.4885,41.1315 L 100.0635,34.49550000000001 L 114.5535,74.1855 L 89.98349999999999,83.94000000000001 L 74.20200000000001,42.36" />
+      <path id="L-80" d="M 100.13700000000001,34.485 L 126.177,26.90400000000001 L 139.722,62.70900000000002 L 139.24530000000001,64.37850000000002 L 114.7803,74.18550000000002 L 100.13700000000001,34.485" />
+      <path id="L-81" d="M 36.192,120.89999999999999 L 37.3575,159.54000000000002 L 63.6075,160.0272 L 72.5325,156.3942 L 58.2525,122.68920000000001 C 56.656499999999994,125.76570000000002 43.8675,130.8687 36.2025,120.96720000000003 L 36.192,120.90000000000002" />
+      <path id="L-82" d="M 58.242000000000004,121.95 L 85.64699999999999,110.71500000000002 L 99.507,144.52499999999998 L 72.52199999999999,155.76 L 58.242,121.95000000000003" />
+      <path id="L-83" d="M 112.842,99.89999999999999 L 86.06700000000001,110.925 L 99.927,144.735 L 126.492,134.02499999999998 L 112.842,99.89999999999999" />
+      <path id="L-84" d="M 139.092,89.39999999999999 L 112.422,100.32000000000001 L 125.967,134.445 L 152.322,123.73500000000003 L 139.092,89.40000000000002" />
+      <path id="L-85" d="M 172.692,115.64999999999999 L 152.74200000000002,123.693 L 139.51200000000003,89.35799999999999 L 163.347,79.75049999999999 C 167.358,78.34349999999999 169.4265,81.53549999999998 169.6365,83.3205 L 172.692,115.65000000000002" />
+      <path id="L-86" d="M 172.692,115.64999999999999 L 143.29200000000003,127.62000000000002 L 156.102,160.90499999999997 L 173.112,154.31099999999998 C 174.86549999999997,153.22949999999997 176.031,151.63349999999997 175.6005,148.44150000000002 L 172.69200000000004,115.65000000000002" />
+      <path id="L-87" d="M 143.29200000000003,127.2 L 117.14699999999999,137.90999999999997 L 130.16700000000003,170.985 L 156.20700000000002,160.56900000000002 L 143.292,127.2" />
+      <path id="L-88" d="M 103.39200000000001,181.8 L 129.64200000000002,171.426 L 116.622,138.351 L 90.267,148.95600000000002 L 103.392,181.8" />
+      <path id="L-89" d="M 76.827,192.3 L 103.497,181.96800000000002 L 90.267,149.20800000000003 L 63.492000000000004,160.12800000000004 L 76.82700000000001,192.3" />
+      <path id="L-90" d="M 38.082,190.2 L 37.3974,159.12 L 63.64739999999999,159.60720000000003 L 76.8774,191.8422 L 38.082,190.2" />
     </g>
   );
 }

@@ -7,8 +7,10 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./", import.meta.url)),
     },
   },
+  // Vitest transforms TSX itself and does not read tsconfig's jsx setting.
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
-    include: ["tests/**/*.test.ts"],
+    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
     environment: "node",
   },
 });
