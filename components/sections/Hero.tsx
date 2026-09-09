@@ -42,7 +42,11 @@ export default function Hero() {
         </p>
 
         <h1 className="mt-4 max-w-3xl text-4xl leading-tight font-normal text-cream-50 sm:text-5xl">
-          {hero.headline}
+          {hero.headline.map((line) => (
+            <span key={line} className="block">
+              {line}
+            </span>
+          ))}
         </h1>
 
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-pine-100">

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { availability } from "@/content/copy";
+import { availability, whatsappHint } from "@/content/copy";
 import { effectiveStatus, formatArea, getLot, LOTS, type LotStatus } from "@/data/lots";
 import {
   PLOT_MAP_BASE,
@@ -13,6 +13,7 @@ import { trackWhatsAppClick } from "@/lib/analytics";
 import { getAttribution } from "@/lib/attribution";
 import { whatsappLotUrl } from "@/lib/whatsapp";
 import { buttonPrimary } from "@/components/ui";
+import BrandGlyph from "@/components/BrandGlyph";
 
 const MAP_ID = "plot-map";
 
@@ -258,9 +259,11 @@ export default function PlotMap() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackWhatsAppClick("lot", { lot: selectedLot.id })}
-                  className={`${buttonPrimary} mt-6 w-full sm:w-auto`}
+                  className={`${buttonPrimary} mt-6 w-full gap-2.5 sm:w-auto`}
                 >
-                  {availability.detail.cta}
+                  <BrandGlyph name="whats" />
+                  {availability.detail.cta}{" "}
+                  <span className="sr-only">{whatsappHint}</span>
                 </a>
               ) : (
                 <p className="mt-6 text-base text-ink-600">{availability.detail.unavailable}</p>

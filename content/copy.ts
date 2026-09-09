@@ -20,9 +20,21 @@ export const topBar = {
   homeHref: "https://wwww.mazaltepec.com",
 } as const;
 
+/**
+ * Appended, visually hidden, to every button that opens WhatsApp. The mark beside the
+ * label says where the button goes; this says the same to a screen reader, so no label
+ * has to spend its words naming the channel instead of the action.
+ */
+export const whatsappHint = "por WhatsApp";
+
 export const hero = {
   eyebrow: "ETAPA 2",
-  headline: "Los últimos lotes residenciales<br>en Jardines de Mazaltepec.",
+  /**
+   * One entry per line. Each renders as its own block, which is how a deliberate break is
+   * expressed here — an HTML tag inside a string is escaped by React and printed literally.
+   * On narrow screens the lines wrap on their own.
+   */
+  headline: ["Los últimos lotes residenciales", "en Jardines de Mazaltepec."],
   body: [
     "Un fraccionamiento que ya está construido, habitado y funcionando.",
     "En la zona Country de Villahermosa.",
@@ -55,7 +67,7 @@ export const availability = {
   lotAccessibleName: "Lote {lot}, {area} m², {status}",
   detail: {
     surface: "Superficie",
-    cta: "Pedir informes por WhatsApp",
+    cta: "Me interesa este lote",
     close: "Cerrar",
     emptyState: "Selecciona un lote del plano para ver su superficie.",
     unavailable: "Este lote ya no está disponible.",
@@ -67,7 +79,7 @@ export const payment = {
   headline: "Compra sin banco y sin buró.",
   body: "Financiamiento directo del desarrollador, con mensualidades fijas.",
   figure: "Opciones de crédito directo con enganche desde $360,000",
-  cta: "Consultar condiciones por WhatsApp",
+  cta: "Consulta las condiciones",
 } as const;
 
 export const subdivision = {
@@ -102,7 +114,7 @@ export const visit = {
     "Estamos en la zona Country de Villahermosa, Tabasco.",
     "Agenda tu recorrido y te mostramos los lotes disponibles.",
   ],
-  ctaWhatsApp: "Agendar por WhatsApp",
+  ctaWhatsApp: "Agenda tu visita",
   formIntro: "o déjanos tus datos y te contactamos hoy mismo:",
   // PLACEHOLDER: media slot — 16/9 static map image of the location.
   mediaLabel: "VISITA — mapa de ubicación",
@@ -114,7 +126,7 @@ export const visit = {
     phone: "Teléfono / WhatsApp",
     lot: "Lote de interés (opcional)",
     lotNone: "Sin lote específico",
-    submit: "Solicitar informes",
+    submit: "Quiero informes",
     submitting: "Enviando…",
     note: "Al enviar aceptas nuestro aviso de privacidad. Usamos tus datos únicamente para contactarte sobre este desarrollo.",
     /** `{nombre}` is replaced with the name the visitor typed. */
