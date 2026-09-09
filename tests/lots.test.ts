@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  availableCount,
   effectiveStatus,
   getLot,
   LOTS,
@@ -29,13 +28,6 @@ describe("lot inventory", () => {
 
   it("omits L-76, which falls outside the plan and has no artwork", () => {
     expect(getLot("L-76")).toBeUndefined();
-  });
-
-  it("counts only sellable lots marked disponible", () => {
-    expect(availableCount()).toBe(
-      SELLABLE_LOTS.filter((lot) => lot.status === "disponible").length,
-    );
-    expect(availableCount()).toBeLessThanOrEqual(13);
   });
 
   it("uses unique ids that match the plot-map artwork convention", () => {

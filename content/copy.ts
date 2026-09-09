@@ -35,9 +35,6 @@ export const hero = {
 export const availability = {
   eyebrow: "DISPONIBILIDAD",
   headline: "Elige tu lote.",
-  body: "Toca cualquier lote para ver su superficie y pedir informes.",
-  /** `{available}` is replaced with the live count of lots marked `disponible`. */
-  counter: "{available} de 13 lotes disponibles",
   mapTitle: "Plano de lotes de la Etapa 2",
   mapDescription:
     "Plano interactivo. Selecciona un lote para ver su superficie y pedir informes por WhatsApp.",

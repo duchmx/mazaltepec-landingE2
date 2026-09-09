@@ -62,10 +62,6 @@ export function getLot(id: string): Lot | undefined {
   return LOTS.find((lot) => lot.id === id);
 }
 
-export function availableCount(): number {
-  return SELLABLE_LOTS.filter((lot) => lot.status === "disponible").length;
-}
-
 export function totalSellableArea(): number {
   // Cents-level rounding: the figures carry two decimals and must sum to 2,220.76.
   const sum = SELLABLE_LOTS.reduce((total, lot) => total + Math.round(lot.area * 100), 0);

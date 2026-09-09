@@ -47,13 +47,13 @@ Lot status is a hand-edited record — no database, no admin, no API.
 
 1. Open `data/lots.ts`.
 2. Change a lot's `status` to `"disponible"`, `"apartado"` or `"vendido"`.
-3. Commit and push. Vercel redeploys; the plot map colors, the availability counter and the
-   form's lot dropdown all follow automatically.
+3. Commit and push. Vercel redeploys; the plot map tints and the form's lot dropdown both
+   follow automatically.
 
 Rules baked in:
 
-- L-77 is third-party owned (`inInventory: false`). It always renders as sold and never
-  counts toward `X de 13 lotes disponibles`. Leave it alone.
+- L-77 is third-party owned (`inInventory: false`). It always renders as sold and is never
+  offered in the form's lot picker. Leave it alone.
 - L-76 is not in the file at all: it falls outside the plan's polygon, so it has no path in
   the artwork and nothing to render. Do not add it back without artwork to match.
 - Areas are legal figures. The 13 sellable lots must sum to 2,220.76 m² — `npm test` fails if
@@ -118,7 +118,7 @@ irregular lots, where a bounding-box centre can land outside the polygon.
 
 Finally run `npm run dev` and check: all 14 lots carry a number that sits inside their own
 outline, available lots respond to click and to Enter/Space when focused, L-77 reads as sold
-and is not focusable, and the counter still says `13 de 13 lotes disponibles`.
+and is not focusable.
 
 If a lot id is missing from the artwork, that lot is simply skipped — the page still renders,
 so check for all 14. `npm test` asserts the artwork and `data/lots.ts` name exactly the same

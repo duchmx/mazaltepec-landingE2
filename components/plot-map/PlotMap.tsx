@@ -12,6 +12,7 @@ import {
 import { trackWhatsAppClick } from "@/lib/analytics";
 import { getAttribution } from "@/lib/attribution";
 import { whatsappLotUrl } from "@/lib/whatsapp";
+import { buttonPrimary } from "@/components/ui";
 
 const MAP_ID = "plot-map";
 
@@ -187,10 +188,11 @@ export default function PlotMap() {
   const status = selectedLot ? effectiveStatus(selectedLot) : null;
 
   return (
-    <div>
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start lg:gap-16">
       <style>{styles}</style>
 
-      <div className="relative mx-auto w-full max-w-[36rem] overflow-hidden rounded-[0.75rem] border border-cream-300 bg-cream-100">
+      {/* The plan floats on the section surface — no card, no frame around it. */}
+      <div className="relative w-full lg:max-w-[30rem]">
         {PLOT_MAP_BASE ? (
           <Image
             src={PLOT_MAP_BASE.src}
@@ -198,7 +200,7 @@ export default function PlotMap() {
             height={PLOT_MAP_BASE.height}
             alt=""
             aria-hidden="true"
-            sizes="(min-width: 640px) 36rem, 100vw"
+            sizes="(min-width: 1024px) 30rem, 100vw"
             className="block h-auto w-full select-none"
             priority={false}
           />
@@ -237,53 +239,52 @@ export default function PlotMap() {
         </svg>
       </div>
 
-      <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-600">
-        {(Object.keys(STATUS_TINT) as LotStatus[]).map((key) => (
-          <li key={key} className="flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              className="inline-block h-3 w-3 rounded-sm border border-cream-300"
-              style={{ background: LEGEND_SWATCH[key] }}
-            />
-            {availability.legend[key]}
-          </li>
-        ))}
-      </ul>
-
-      {/* Detail panel. Announced when a lot is chosen. */}
-      <div
-        aria-live="polite"
-        className="mt-6 rounded-[0.75rem] border border-cream-300 bg-cream-100 p-5"
-      >
-        {selectedLot && status ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Selected lot and its call to action, alongside the plan on desktop. */}
+      <div className="lg:sticky lg:top-24">
+        <div aria-live="polite">
+          {selectedLot && status ? (
             <div>
-              <p className="text-lg font-medium text-ink-900">
+              <p className="text-2xl font-medium text-ink-900">
                 {availability.lotLabel} {selectedLot.id}
               </p>
-              <p className="text-sm text-ink-600">
-                {availability.detail.surface}: {formatArea(selectedLot.area)}{" "}
-                {availability.areaUnit} · {availability.legend[status]}
+              <p className="mt-1 text-lg text-ink-600">
+                {formatArea(selectedLot.area)} {availability.areaUnit} ·{" "}
+                {availability.legend[status]}
               </p>
-            </div>
 
-            {status === "disponible" ? (
-              <a
-                href={whatsappLotUrl(selectedLot.id, getAttribution())}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackWhatsAppClick("lot", { lot: selectedLot.id })}
-                className="inline-flex shrink-0 items-center justify-center rounded-[0.75rem] bg-pine-800 px-5 py-3 text-sm font-medium text-cream-50 hover:bg-pine-700"
-              >
-                {availability.detail.cta}
-              </a>
-            ) : (
-              <p className="text-sm text-ink-600">{availability.detail.unavailable}</p>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-ink-600">{availability.detail.emptyState}</p>
-        )}
+              {status === "disponible" ? (
+                <a
+                  href={whatsappLotUrl(selectedLot.id, getAttribution())}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackWhatsAppClick("lot", { lot: selectedLot.id })}
+                  className={`${buttonPrimary} mt-6 w-full sm:w-auto`}
+                >
+                  {availability.detail.cta}
+                </a>
+              ) : (
+                <p className="mt-6 text-base text-ink-600">{availability.detail.unavailable}</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-lg leading-relaxed text-ink-600">
+              {availability.detail.emptyState}
+            </p>
+          )}
+        </div>
+
+        <ul className="mt-10 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-600">
+          {(Object.keys(STATUS_TINT) as LotStatus[]).map((key) => (
+            <li key={key} className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="inline-block h-3 w-3 rounded-sm border border-cream-300"
+                style={{ background: LEGEND_SWATCH[key] }}
+              />
+              {availability.legend[key]}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
