@@ -31,9 +31,15 @@ export const viewport: Viewport = {
   themeColor: "#184A3A",
 };
 
+/**
+ * `data-theme="light"` pins the theme. brand_system/tokens/tokens.css carries a dark theme
+ * that repaints the page under prefers-color-scheme: dark; this landing is a fixed light
+ * design — the plot map's base render is a light drawing — so the theme is held with the
+ * brand file's own opt-out rather than by editing the vendored file.
+ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-MX" className={poppins.variable}>
+    <html lang="es-MX" data-theme="light" className={poppins.variable}>
       <body className="font-sans antialiased">
         <a
           href="#contenido"

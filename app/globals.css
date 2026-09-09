@@ -1,49 +1,21 @@
 @import "tailwindcss";
+/* Vendored brand system — read-only, shared with the sibling Mazaltepec projects. */
+@import "../brand_system/tokens/tokens.css";
 
-/* Design system — see README. Do not add colors outside this scale. */
+/* Everything below overrides or extends brand_system/tokens/tokens.css.
+   The color scale itself lives there — do not redeclare colors here. */
 @theme {
-  --color-pine-800: #184a3a;
-  --color-pine-700: #1f5e49;
-  --color-pine-600: #2a7058;
-  --color-pine-100: #d5e8e0;
-  --color-pine-50: #eef6f3;
-
-  --color-leaf-700: #416c3f;
-  --color-leaf-400: #82b280;
-  --color-leaf-100: #dbe6db;
-
-  --color-camel-700: #7e683d;
-  --color-camel-500: #b3996b;
-  --color-camel-200: #e8dcc7;
-
-  --color-cream-50: #f7f8f1;
-  --color-cream-100: #eff0e2;
-  --color-cream-200: #e2e2d6;
-  --color-cream-300: #d2d2c4;
-
-  --color-ink-900: #14201b;
-  --color-ink-600: #4b5a52;
-  --color-ink-400: #8a958d;
-  --color-ink-200: #c6ccc8;
-  --color-ink-100: #e0e4e1;
+  /* next/font serves Poppins locally; the brand file names the family directly, which
+     would bypass it and fall back to Trebuchet. Point font-sans back at the loaded face. */
+  --font-sans: var(--font-poppins), 'Poppins', 'Trebuchet MS', ui-sans-serif, system-ui, sans-serif;
 
   --radius-brand: 0.75rem;
-
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-
-  --ease-brand: cubic-bezier(0.2, 0, 0, 1);
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-  }
-
-  body {
-    background-color: var(--color-cream-50);
-    color: var(--color-ink-900);
-    font-weight: 300;
   }
 
   /* Single transition curve and duration across the whole page. */
@@ -53,11 +25,6 @@
   [data-lot] {
     transition-duration: 120ms;
     transition-timing-function: var(--ease-brand);
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--color-pine-800);
-    outline-offset: 2px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -74,4 +41,26 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+/* ── Overrides of the brand file's own base layer ──────────────────────────
+   tokens.css sets `body` and `:focus-visible` outside any cascade layer, so these
+   have to be unlayered as well — a @layer base rule would lose to them no matter
+   what order it appears in. Same reason the theme is pinned in app/layout.tsx. */
+
+body {
+  /* The brand file's light `--ground` is pure white. This page is built on cream. */
+  background: var(--color-cream-50);
+  color: var(--color-ink-900);
+  /* next/font registers the family as "Poppins", so the brand file's own stack already
+     hits the self-hosted face — but it skips next/font's metric-matched fallback. Go
+     through --font-sans to keep that and hold layout shift down during swap. */
+  font-family: var(--font-sans);
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-pine-800);
+  outline-offset: 2px;
 }

@@ -36,6 +36,8 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "brand_system/tokens/tokens.ts",
+    "brand_system/index.ts"
   ]
 }
