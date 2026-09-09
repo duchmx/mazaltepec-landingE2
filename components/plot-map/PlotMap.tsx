@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { availability, whatsappHint } from "@/content/copy";
 import { effectiveStatus, formatArea, getLot, LOTS, type LotStatus } from "@/data/lots";
@@ -16,6 +17,9 @@ import { buttonPrimary } from "@/components/ui";
 import BrandGlyph from "@/components/BrandGlyph";
 
 const MAP_ID = "plot-map";
+
+/** Aligns the left column's copy with the centred sections above and below it. */
+const COLUMN_PADDING = "px-5 pl-(--page-gutter) sm:px-8 sm:pl-(--page-gutter) lg:pr-0";
 
 /**
  * Lot tinting sits ON TOP of the rendered plan, so an available lot is left alone and the
@@ -74,7 +78,16 @@ function statusStyles(): string {
   return fills + states;
 }
 
-export default function PlotMap() {
+type PlotMapProps = {
+  /**
+   * The section's eyebrow and headline. Rendered on the server and passed in, because the
+   * two-column layout is the map's own — the header sits in its left column, above the
+   * selected lot, and the plan runs flush to the page edge on the right.
+   */
+  header: ReactNode;
+};
+
+export default function PlotMap({ header }: PlotMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [measured, setMeasured] = useState<LotLabel[]>([]);
@@ -189,11 +202,23 @@ export default function PlotMap() {
   const status = selectedLot ? effectiveStatus(selectedLot) : null;
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start lg:gap-16">
+    /*
+     * DOM order is header, plan, detail — which is the reading order on a phone, and keeps
+     * the selected lot's answer directly below the plan you just tapped. On large screens
+     * explicit placement moves the header and detail into a left column and spans the plan
+     * down the right, so the source order never has to fight the layout.
+     */
+    <div className="grid gap-y-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:grid-rows-[auto_1fr] lg:gap-x-12">
       <style>{styles}</style>
 
-      {/* The plan floats on the section surface — no card, no frame around it. */}
-      <div className="relative w-full lg:max-w-[30rem]">
+      <div className={`${COLUMN_PADDING} lg:col-start-1 lg:row-start-1`}>{header}</div>
+
+      {/* The plan runs to the right edge of the page. Height is the only driver and the
+          locked ratio sets the width — about half the viewport — so the container can never
+          take a ratio the artwork does not share. That matters more than it looks: the SVG
+          is stretched over this box, so any mismatch would slide the lots off the drawing.
+          Do not add a max-width or max-height here; either one would break that. */}
+      <div className="relative w-full lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-[min(94vh,56rem)] lg:w-auto lg:self-center lg:[aspect-ratio:211/265.224]">
         {PLOT_MAP_BASE ? (
           <Image
             src={PLOT_MAP_BASE.src}
@@ -201,8 +226,8 @@ export default function PlotMap() {
             height={PLOT_MAP_BASE.height}
             alt=""
             aria-hidden="true"
-            sizes="(min-width: 1024px) 30rem, 100vw"
-            className="block h-auto w-full select-none"
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="block h-full w-full select-none object-cover"
             priority={false}
           />
         ) : null}
@@ -240,8 +265,9 @@ export default function PlotMap() {
         </svg>
       </div>
 
-      {/* Selected lot and its call to action, alongside the plan on desktop. */}
-      <div className="lg:sticky lg:top-24">
+      {/* Sits high in the left column rather than centred in it, which is where the
+          reference composition puts it against the plan's diagonal top edge. */}
+      <div className={`${COLUMN_PADDING} lg:col-start-1 lg:row-start-2 lg:mt-24 lg:self-start`}>
         <div aria-live="polite">
           {selectedLot && status ? (
             <div>
@@ -270,7 +296,7 @@ export default function PlotMap() {
               )}
             </div>
           ) : (
-            <p className="text-lg leading-relaxed text-ink-600">
+            <p className="max-w-sm text-lg leading-relaxed text-ink-600">
               {availability.detail.emptyState}
             </p>
           )}

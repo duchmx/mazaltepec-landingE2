@@ -12,6 +12,19 @@
   --radius-brand: 0.75rem;
 }
 
+/* Distance from the viewport edge to where a section's text starts. Matches what
+   `mx-auto max-w-5xl px-8` produces, so a full-bleed section can align its copy with
+   every centred one — 160px at a 1280 viewport, the page gutter at narrower ones. */
+:root {
+  --page-gutter: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --page-gutter: max(2rem, calc((100vw - 64rem) / 2 + 2rem));
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
