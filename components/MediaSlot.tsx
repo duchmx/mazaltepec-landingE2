@@ -74,8 +74,9 @@ export default function MediaSlot({
         isDev && (
           <span
             className={`absolute inset-0 flex px-4 py-3 text-center text-[11px] font-medium tracking-[0.12em] uppercase opacity-70 ${
-              // A fill slot sits behind copy, so its label goes to the corner.
-              fill ? "items-start justify-start" : "items-center justify-center"
+              // A fill slot sits behind copy, so its label goes to the corner — the
+              // bottom one, since the hero's top bar now occupies the top of that block.
+              fill ? "items-end justify-end" : "items-center justify-center"
             }`}
           >
             <span className={LABEL_CLASS[tone]}>{label}</span>

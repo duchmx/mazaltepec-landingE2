@@ -25,6 +25,15 @@ export const metadata: Metadata = {
     type: "website",
   },
   robots: { index: true, follow: true },
+  /*
+   * The bare diamond isotype from the brand package, served out of public/ by the
+   * asset sync. The vertical lockup carries the wordmark and turns to mush at 32px,
+   * so it is deliberately not used here.
+   */
+  icons: {
+    icon: [{ url: "/brand_system/assets/favicons/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/brand_system/assets/favicons/favicon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export const viewport: Viewport = {

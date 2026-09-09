@@ -61,6 +61,30 @@ Rules baked in:
 
 ---
 
+## Brand system
+
+`brand_system/` is vendored, read-only, and shared with the sibling Mazaltepec projects.
+Do not edit anything inside it — update it at the source and re-copy.
+
+- **Tokens** are imported by `app/globals.css` and own the colour scale. Do not redeclare
+  colours anywhere else.
+- **Assets** are mirrored into `public/` by `scripts/sync-brand-assets.mjs`, which runs on
+  `predev` and `prebuild`. `public/brand_system` is generated and git-ignored.
+- **The logo** is `BrandLogo` from `@/brand_system/integration/react/BrandLogo`. It appears
+  twice: the hero top bar and the footer, both `variant="blanco"` because both sit on
+  pine-800. Never `color` or `negro` over a dark ground.
+- **Clear space** is one rhombus of the isotype — 12.4% of the lockup's rendered width, so
+  about 14px at `h-9` and 16px at `h-10`. The existing padding already clears it; keep that
+  in mind if you resize the mark.
+- **Minimum size** is 100px wide for the horizontal lockup. It renders 116px at `h-9`,
+  129px at `h-10` and 103px at `h-8` — do not go below `h-8`.
+- **`max-w-none` is required** on both logos. Tailwind's preflight caps images at 100% of
+  their container, which collapses the lockup to zero width inside a shrink-to-fit anchor.
+- **Theme** is pinned to `data-theme="light"` on `<html>`. The brand tokens ship a dark
+  theme, and this page is a fixed light design.
+
+---
+
 ## Swapping in the architect's SVG
 
 The plot map is two layers, both declared in **one file**, `components/plot-map/artwork.tsx`:

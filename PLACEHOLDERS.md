@@ -48,6 +48,9 @@ README, "Replacing a MediaSlot with real media".
 | `FRACCIONAMIENTO B — alberca y áreas sociales` | `components/sections/Subdivision.tsx` | `4/5` | `leaf-400` | Still of the pool and social areas. |
 | `VISITA — mapa de ubicación` | `components/sections/Visit.tsx` | `16/9` | `cream-200` | Static map image of the location. No live Google Maps embed. |
 
+The logo, favicon and og:image are **not** placeholders — they come from the vendored
+brand system and are final. See README, "Brand system".
+
 ---
 
 ## Plot map artwork

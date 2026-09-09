@@ -14,6 +14,12 @@ export const site = {
   skipToContent: "Ir al contenido",
 } as const;
 
+export const topBar = {
+  /** The only nav item on the page: back to the main subdivision site. */
+  homeLabel: "Volver a mazaltepec.com",
+  homeHref: "https://mazaltepec.com",
+} as const;
+
 export const hero = {
   eyebrow: "ETAPA 2",
   headline: "Los últimos lotes de Jardines de Mazaltepec.",
@@ -115,6 +121,7 @@ export const visit = {
 } as const;
 
 export const footer = {
+  /** Rendered as the official lockup; kept as the logo's alt text. */
   brand: "Jardines de Mazaltepec",
   developer: "Un desarrollo de Arvore S.A. de C.V.",
   phone: "993 228 2449",
