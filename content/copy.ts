@@ -68,6 +68,8 @@ export const availability = {
   detail: {
     surface: "Superficie",
     cta: "Me interesa este lote",
+    /** Shown on lots that are taken: the conversation is about what is still free. */
+    ctaUnavailable: "Quiero ver los disponibles",
     close: "Cerrar",
     emptyState: "Selecciona un lote del plano para ver su superficie.",
     unavailable: "Este lote ya no está disponible.",
@@ -145,6 +147,15 @@ export const footer = {
   developer: "Un desarrollo de Arvore",
   phone: "993 228 2449",
   privacy: "Aviso de privacidad",
+  /** Icon links. Labels are the accessible names — the icons themselves are decorative. */
+  contact: {
+    whatsapp: "Escríbenos por WhatsApp",
+    phone: "Llámanos",
+    facebook: "Facebook",
+    instagram: "Instagram",
+  },
+  facebookHref: "https://www.facebook.com/jardinesdemazaltepecmx",
+  instagramHref: "https://www.instagram.com/jardinesdemazaltepec",
   // PLACEHOLDER: point at the published aviso de privacidad.
   privacyHref: "https://www.mazaltepec.com",
   disclaimer:
@@ -158,6 +169,8 @@ export const sticky = {
 /** Pre-filled WhatsApp messages. `{lot}` and `{ref}` are filled by lib/whatsapp.ts. */
 export const whatsappMessages = {
   general: "Hola, quiero informes de la Etapa 2 de Jardines de Mazaltepec.",
+  availableLots:
+    "Hola, quiero informes de los lotes disponibles de la Etapa 2 de Jardines de Mazaltepec.",
   lot: "Hola, me interesa el lote {lot} de la Etapa 2 de Jardines de Mazaltepec (ref {ref}). ¿Me pueden dar informes?",
   payment: "Hola, quiero conocer las opciones de crédito directo de la Etapa 2.",
   visit: "Hola, quiero agendar una visita a Jardines de Mazaltepec.",

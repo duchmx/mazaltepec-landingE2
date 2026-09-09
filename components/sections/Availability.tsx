@@ -4,13 +4,15 @@ import { availability, nav } from "@/content/copy";
 
 export default function Availability() {
   return (
-    // Full bleed: the plan reaches the right edge of the page, so the section carries no
-    // centred shell — the left column aligns its copy with every other section through
-    // --page-gutter. No bottom padding at lg either: the plan runs to the section's bottom
-    // edge so it reads as sitting on the corner, and the left column pads itself instead.
+    // Full bleed and, at lg, unpadded: the plan fills the right half edge to edge and its
+    // locked ratio sets the section's height, so the drawing meets the section's top and
+    // bottom exactly. The left column pads itself, aligning its copy with every other
+    // section through --page-gutter.
     <section
       id={nav.availabilityAnchor}
-      className="overflow-hidden bg-cream-50 py-16 sm:py-24 lg:pb-0"
+      // overflow-x-clip, not overflow-hidden: `hidden` would make this a scroll container
+      // and silently break the left column's position: sticky. `clip` does not.
+      className="overflow-x-clip bg-cream-50 py-16 sm:py-24 lg:py-0"
     >
       <PlotMap
         header={

@@ -4,7 +4,7 @@ import type { Attribution } from "@/lib/attribution";
 /** +52 993 228 2449 in wa.me form (Mexican mobile prefix "1"). */
 export const WHATSAPP_NUMBER = "5219932282449";
 
-export type WhatsAppIntent = "general" | "payment" | "visit";
+export type WhatsAppIntent = "general" | "availableLots" | "payment" | "visit";
 
 function toUrl(message: string): string {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
