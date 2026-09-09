@@ -250,11 +250,14 @@ export default function PlotMap({ header }: PlotMapProps) {
          * drop 81px on the tap and slide the lot out from under the finger that chose it.
          */}
         {/*
-         * The reserved height keeps the plan still on a phone, where this slot sits above
-         * it — without it the plan shifts on selection and slides the lot out from under
-         * the finger that chose it. Raise it if the selected state grows taller.
+         * Desktop only. Below lg the bar pinned over the plan carries all of this, so the
+         * column stays short and the plan starts higher up the screen. Nothing above the
+         * plan changes on selection there, which is also why it can no longer shift.
+         *
+         * Two live regions, one per breakpoint: whichever is display:none is not announced,
+         * so a selection is read out once, from whichever of the two is actually on screen.
          */}
-        <div aria-live="polite" className="mt-8 min-h-[5.5rem] lg:mt-28 lg:min-h-[10rem]">
+        <div aria-live="polite" className="max-lg:hidden lg:mt-28 lg:min-h-[10rem]">
           {selectedLot && status ? (
             <div>
               <p className="text-2xl font-medium text-ink-900">
@@ -269,9 +272,7 @@ export default function PlotMap({ header }: PlotMapProps) {
                 <p className="mt-3 text-base text-ink-600">{availability.detail.unavailable}</p>
               )}
 
-              {/* Below lg the bar pinned over the plan carries this button; showing it here
-                  too would put the same call to action on screen twice. */}
-              <LotCta lot={selectedLot} status={status} className="mt-6 max-lg:hidden sm:w-auto" />
+              <LotCta lot={selectedLot} status={status} className="mt-6 sm:w-auto" />
             </div>
           ) : (
             <p className="max-w-sm text-lg leading-relaxed text-ink-600">
@@ -280,7 +281,12 @@ export default function PlotMap({ header }: PlotMapProps) {
           )}
         </div>
 
-        <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-600 lg:mt-10">
+        {/* The same prompt on a phone, kept quiet: the plan answers, this only points at it. */}
+        <p className="mt-5 max-w-[16rem] text-xs leading-relaxed text-ink-400 lg:hidden">
+          {availability.detail.emptyState}
+        </p>
+
+        <ul className="mt-5 flex flex-col gap-1.5 text-sm text-ink-600 lg:mt-10 lg:flex-row lg:flex-wrap lg:gap-x-5 lg:gap-y-2">
           {(Object.keys(STATUS_TINT) as LotStatus[]).map((key) => (
             <li key={key} className="flex items-center gap-2">
               <span
@@ -300,7 +306,7 @@ export default function PlotMap({ header }: PlotMapProps) {
        * over this same box, so a container that could take a different ratio would slide
        * every lot off the drawing. Do not add a max-width or max-height.
        */}
-      <div className="relative mt-10 w-full lg:col-start-2 lg:row-start-1 lg:mt-0 lg:[aspect-ratio:211/265.224]">
+      <div className="relative mt-8 w-full lg:col-start-2 lg:row-start-1 lg:mt-0 lg:[aspect-ratio:211/265.224]">
         {PLOT_MAP_BASE ? (
           <Image
             src={PLOT_MAP_BASE.src}
@@ -365,11 +371,15 @@ export default function PlotMap({ header }: PlotMapProps) {
             >
               <div className="flex items-baseline justify-between gap-4">
                 <p className="text-lg font-medium text-ink-900">
-                  {availability.lotLabel} {selectedLot.id}
+                  {availability.lotLabel} {selectedLot.id}{" "}
+                  {/* The space is a real text node: without it the accessible name runs
+                      the number and the status together as "L-77Vendido". */}
+                  <span className="text-sm font-light text-ink-600">
+                    {availability.legend[status]}
+                  </span>
                 </p>
                 <p className="shrink-0 text-sm text-ink-600">
                   {formatArea(selectedLot.area)} {availability.areaUnit}
-                  {status !== "disponible" ? ` · ${availability.legend[status]}` : ""}
                 </p>
               </div>
 
