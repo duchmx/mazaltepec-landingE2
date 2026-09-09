@@ -4,7 +4,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { availability, whatsappHint } from "@/content/copy";
-import { effectiveStatus, formatArea, getLot, LOTS, type LotStatus } from "@/data/lots";
+import { effectiveStatus, formatArea, getLot, LOTS, type Lot, type LotStatus } from "@/data/lots";
 import {
   PLOT_MAP_BASE,
   PLOT_MAP_VIEW_BOX,
@@ -46,6 +46,35 @@ const LABEL_FILL: Record<LotStatus, string> = {
 };
 
 type LotLabel = { id: string; x: number; y: number; status: LotStatus };
+
+/**
+ * The call to action for a selected lot. Available lots start a conversation about that
+ * lot; taken ones start a conversation about what is still free, so a reserved or sold
+ * lot is still a way in rather than a dead end.
+ */
+function LotCta({ lot, status, className = "" }: { lot: Lot; status: LotStatus; className?: string }) {
+  const available = status === "disponible";
+
+  return (
+    <a
+      href={
+        available
+          ? whatsappLotUrl(lot.id, getAttribution())
+          : whatsappUrl("availableLots", getAttribution())
+      }
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() =>
+        trackWhatsAppClick(available ? "lot" : "lot-unavailable", { lot: lot.id })
+      }
+      className={`${buttonPrimary} w-full gap-2.5 ${className}`}
+    >
+      <BrandGlyph name="whats" />
+      {available ? availability.detail.cta : availability.detail.ctaUnavailable}{" "}
+      <span className="sr-only">{whatsappHint}</span>
+    </a>
+  );
+}
 
 /**
  * Status paint is emitted as CSS keyed on the artwork's own `id` attributes, so the map is
@@ -220,7 +249,12 @@ export default function PlotMap({ header }: PlotMapProps) {
          * the selected state is 140px against the hint's 59px, so without it the plan would
          * drop 81px on the tap and slide the lot out from under the finger that chose it.
          */}
-        <div aria-live="polite" className="mt-8 min-h-[8.75rem] lg:mt-28 lg:min-h-[10rem]">
+        {/*
+         * The reserved height keeps the plan still on a phone, where this slot sits above
+         * it — without it the plan shifts on selection and slides the lot out from under
+         * the finger that chose it. Raise it if the selected state grows taller.
+         */}
+        <div aria-live="polite" className="mt-8 min-h-[5.5rem] lg:mt-28 lg:min-h-[10rem]">
           {selectedLot && status ? (
             <div>
               <p className="text-2xl font-medium text-ink-900">
@@ -231,39 +265,13 @@ export default function PlotMap({ header }: PlotMapProps) {
                 {availability.legend[status]}
               </p>
 
-              {status === "disponible" ? (
-                <a
-                  href={whatsappLotUrl(selectedLot.id, getAttribution())}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackWhatsAppClick("lot", { lot: selectedLot.id })}
-                  className={`${buttonPrimary} mt-6 w-full gap-2.5 sm:w-auto`}
-                >
-                  <BrandGlyph name="whats" />
-                  {availability.detail.cta}{" "}
-                  <span className="sr-only">{whatsappHint}</span>
-                </a>
-              ) : (
-                /* Taken lots still start a conversation — about what is left, not this one. */
-                <>
-                  <p className="mt-3 text-base text-ink-600">
-                    {availability.detail.unavailable}
-                  </p>
-                  <a
-                    href={whatsappUrl("availableLots", getAttribution())}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() =>
-                      trackWhatsAppClick("lot-unavailable", { lot: selectedLot.id })
-                    }
-                    className={`${buttonPrimary} mt-5 w-full gap-2.5 sm:w-auto`}
-                  >
-                    <BrandGlyph name="whats" />
-                    {availability.detail.ctaUnavailable}{" "}
-                    <span className="sr-only">{whatsappHint}</span>
-                  </a>
-                </>
+              {status !== "disponible" && (
+                <p className="mt-3 text-base text-ink-600">{availability.detail.unavailable}</p>
               )}
+
+              {/* Below lg the bar pinned over the plan carries this button; showing it here
+                  too would put the same call to action on screen twice. */}
+              <LotCta lot={selectedLot} status={status} className="mt-6 max-lg:hidden sm:w-auto" />
             </div>
           ) : (
             <p className="max-w-sm text-lg leading-relaxed text-ink-600">
@@ -337,6 +345,38 @@ export default function PlotMap({ header }: PlotMapProps) {
             ))}
           </g>
         </svg>
+
+        {/*
+         * Small screens only. While you are inside the plan the selected lot rides the
+         * bottom of the viewport, so you can keep scrolling and tapping other lots without
+         * losing what you picked — the copy at the top of the section is long gone by then.
+         *
+         * It is sticky, not fixed, and its containing block is the plan's lower half. That
+         * is what gives it both limits for free: it can never rise above the middle of the
+         * plan when you scroll back up, and it can never outlive the plan when you scroll
+         * past — no scroll listeners, and nothing that keeps hold of the screen once this
+         * section is behind you.
+         */}
+        {selectedLot && status ? (
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 bottom-0 flex items-end p-4 lg:hidden">
+            <div
+              className="pointer-events-auto sticky bottom-4 w-full rounded-[0.75rem] border border-cream-300 bg-cream-50/95 p-4 backdrop-blur"
+              style={{ boxShadow: "var(--shadow-elev-raised)" }}
+            >
+              <div className="flex items-baseline justify-between gap-4">
+                <p className="text-lg font-medium text-ink-900">
+                  {availability.lotLabel} {selectedLot.id}
+                </p>
+                <p className="shrink-0 text-sm text-ink-600">
+                  {formatArea(selectedLot.area)} {availability.areaUnit}
+                  {status !== "disponible" ? ` · ${availability.legend[status]}` : ""}
+                </p>
+              </div>
+
+              <LotCta lot={selectedLot} status={status} className="mt-3" />
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -2,23 +2,43 @@
 
 import { useEffect, useState } from "react";
 import WhatsAppLink from "@/components/WhatsAppLink";
-import { sticky } from "@/content/copy";
+import { nav, sticky } from "@/content/copy";
 
-/** Mobile-only. Appears once the hero — and its own WhatsApp CTA — has scrolled away. */
+/**
+ * Mobile-only. Appears once the availability section is behind you.
+ *
+ * It used to key off the hero, but the plan carries its own bottom bar for the selected
+ * lot and two stacked bars on a phone is one too many. Availability sits directly below
+ * the hero, so gating on it keeps the old behaviour everywhere else on the page.
+ *
+ * Deliberately not an IntersectionObserver. That only reports when the intersecting state
+ * changes, and a jump from below the section to clear above it — an anchor link, a restored
+ * scroll position — leaves that state unchanged at `false`, so no callback fires and the
+ * button never appears. Reading the position answers correctly from any scroll position,
+ * including the first paint after a restore.
+ */
 export default function StickyWhatsApp() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const heroEl = document.getElementById("hero");
-    if (!heroEl) return;
+    const gate =
+      document.getElementById(nav.availabilityAnchor) ?? document.getElementById("hero");
+    if (!gate) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setVisible(!entry.isIntersecting),
-      { threshold: 0 },
-    );
-    observer.observe(heroEl);
+    // Above the viewport, not merely out of it: scrolling back up hides it again, which
+    // hands the screen back to the plan's own bar. One rect read per scroll event, and
+    // React drops the re-render whenever the answer has not changed — no rAF throttle,
+    // which would stall this behind a paused frame loop on a backgrounded tab.
+    const measure = () => setVisible(gate.getBoundingClientRect().bottom < 0);
 
-    return () => observer.disconnect();
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
   }, []);
 
   if (!visible) return null;
