@@ -203,22 +203,67 @@ export default function PlotMap({ header }: PlotMapProps) {
 
   return (
     /*
-     * DOM order is header, plan, detail — which is the reading order on a phone, and keeps
-     * the selected lot's answer directly below the plan you just tapped. On large screens
-     * explicit placement moves the header and detail into a left column and spans the plan
-     * down the right, so the source order never has to fight the layout.
+     * Source order is header, detail, plan, legend. On a phone that puts the hint — and the
+     * lot's surface and call to action once one is chosen — directly under the headline, so
+     * the answer always appears in the same place. On large screens explicit grid placement
+     * collects those three into a left column and spans the plan down the right, so the
+     * source order never has to fight the layout.
      */
-    <div className="grid gap-y-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:grid-rows-[auto_1fr] lg:gap-x-12">
+    <div className="grid gap-y-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:grid-rows-[auto_auto_1fr] lg:gap-x-12 lg:gap-y-0">
       <style>{styles}</style>
 
       <div className={`${COLUMN_PADDING} lg:col-start-1 lg:row-start-1`}>{header}</div>
 
-      {/* The plan runs to the right edge of the page. Height is the only driver and the
-          locked ratio sets the width — about half the viewport — so the container can never
-          take a ratio the artwork does not share. That matters more than it looks: the SVG
-          is stretched over this box, so any mismatch would slide the lots off the drawing.
-          Do not add a max-width or max-height here; either one would break that. */}
-      <div className="relative w-full lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-[min(94vh,56rem)] lg:w-auto lg:self-center lg:[aspect-ratio:211/265.224]">
+      {/* Sits high in the left column rather than centred in it, which is where the
+          reference composition puts it against the plan's diagonal top edge.
+
+          The reserved height is what keeps the plan still on a phone, where this slot sits
+          above it: the selected state is 140px against the hint's 59px, so without it the
+          plan would drop 81px on the tap and slide the lot out from under the finger that
+          chose it. Raise it if the selected state ever grows taller. */}
+      <div
+        aria-live="polite"
+        className={`${COLUMN_PADDING} min-h-[8.75rem] lg:col-start-1 lg:row-start-2 lg:mt-24 lg:min-h-0 lg:self-start`}
+      >
+        {selectedLot && status ? (
+          <div>
+            <p className="text-2xl font-medium text-ink-900">
+              {availability.lotLabel} {selectedLot.id}
+            </p>
+            <p className="mt-1 text-lg text-ink-600">
+              {formatArea(selectedLot.area)} {availability.areaUnit} ·{" "}
+              {availability.legend[status]}
+            </p>
+
+            {status === "disponible" ? (
+              <a
+                href={whatsappLotUrl(selectedLot.id, getAttribution())}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackWhatsAppClick("lot", { lot: selectedLot.id })}
+                className={`${buttonPrimary} mt-6 w-full gap-2.5 sm:w-auto`}
+              >
+                <BrandGlyph name="whats" />
+                {availability.detail.cta}{" "}
+                <span className="sr-only">{whatsappHint}</span>
+              </a>
+            ) : (
+              <p className="mt-6 text-base text-ink-600">{availability.detail.unavailable}</p>
+            )}
+          </div>
+        ) : (
+          <p className="max-w-sm text-lg leading-relaxed text-ink-600">
+            {availability.detail.emptyState}
+          </p>
+        )}
+      </div>
+
+      {/* The plan runs to the right edge of the page and down to the section's bottom edge,
+          so it reads as sitting on that corner. Height is the only thing driving its size
+          and the locked ratio derives the width. That matters more than it looks: the SVG
+          is stretched over this box, so a container that could take a different ratio would
+          slide every lot off the drawing. Do not add a max-width or max-height here. */}
+      <div className="relative w-full lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:h-[min(108vh,64rem)] lg:w-auto lg:self-end lg:[aspect-ratio:211/265.224]">
         {PLOT_MAP_BASE ? (
           <Image
             src={PLOT_MAP_BASE.src}
@@ -226,7 +271,7 @@ export default function PlotMap({ header }: PlotMapProps) {
             height={PLOT_MAP_BASE.height}
             alt=""
             aria-hidden="true"
-            sizes="(min-width: 1024px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 55vw, 100vw"
             className="block h-full w-full select-none object-cover"
             priority={false}
           />
@@ -265,56 +310,20 @@ export default function PlotMap({ header }: PlotMapProps) {
         </svg>
       </div>
 
-      {/* Sits high in the left column rather than centred in it, which is where the
-          reference composition puts it against the plan's diagonal top edge. */}
-      <div className={`${COLUMN_PADDING} lg:col-start-1 lg:row-start-2 lg:mt-24 lg:self-start`}>
-        <div aria-live="polite">
-          {selectedLot && status ? (
-            <div>
-              <p className="text-2xl font-medium text-ink-900">
-                {availability.lotLabel} {selectedLot.id}
-              </p>
-              <p className="mt-1 text-lg text-ink-600">
-                {formatArea(selectedLot.area)} {availability.areaUnit} ·{" "}
-                {availability.legend[status]}
-              </p>
-
-              {status === "disponible" ? (
-                <a
-                  href={whatsappLotUrl(selectedLot.id, getAttribution())}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackWhatsAppClick("lot", { lot: selectedLot.id })}
-                  className={`${buttonPrimary} mt-6 w-full gap-2.5 sm:w-auto`}
-                >
-                  <BrandGlyph name="whats" />
-                  {availability.detail.cta}{" "}
-                  <span className="sr-only">{whatsappHint}</span>
-                </a>
-              ) : (
-                <p className="mt-6 text-base text-ink-600">{availability.detail.unavailable}</p>
-              )}
-            </div>
-          ) : (
-            <p className="max-w-sm text-lg leading-relaxed text-ink-600">
-              {availability.detail.emptyState}
-            </p>
-          )}
-        </div>
-
-        <ul className="mt-10 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-600">
-          {(Object.keys(STATUS_TINT) as LotStatus[]).map((key) => (
-            <li key={key} className="flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="inline-block h-3 w-3 rounded-sm border border-cream-300"
-                style={{ background: LEGEND_SWATCH[key] }}
-              />
-              {availability.legend[key]}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul
+        className={`${COLUMN_PADDING} flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-600 lg:col-start-1 lg:row-start-3 lg:mt-10 lg:self-start lg:pb-16`}
+      >
+        {(Object.keys(STATUS_TINT) as LotStatus[]).map((key) => (
+          <li key={key} className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="inline-block h-3 w-3 rounded-sm border border-cream-300"
+              style={{ background: LEGEND_SWATCH[key] }}
+            />
+            {availability.legend[key]}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

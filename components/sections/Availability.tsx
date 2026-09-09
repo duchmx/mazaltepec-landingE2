@@ -5,9 +5,13 @@ import { availability, nav } from "@/content/copy";
 export default function Availability() {
   return (
     // Full bleed: the plan reaches the right edge of the page, so the section carries no
-    // centred shell. The left column aligns its copy with every other section through
-    // --page-gutter.
-    <section id={nav.availabilityAnchor} className="overflow-hidden bg-cream-50 py-16 sm:py-24">
+    // centred shell — the left column aligns its copy with every other section through
+    // --page-gutter. No bottom padding at lg either: the plan runs to the section's bottom
+    // edge so it reads as sitting on the corner, and the left column pads itself instead.
+    <section
+      id={nav.availabilityAnchor}
+      className="overflow-hidden bg-cream-50 py-16 sm:py-24 lg:pb-0"
+    >
       <PlotMap
         header={
           <div>
