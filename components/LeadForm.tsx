@@ -3,7 +3,6 @@
 import { useId, useState, type FormEvent } from "react";
 import { buttonPrimary } from "@/components/ui";
 import { visit } from "@/content/copy";
-import { SELLABLE_LOTS } from "@/data/lots";
 import { trackLeadSubmit } from "@/lib/analytics";
 import { useAttribution } from "@/lib/useAttribution";
 import { isValidMexicanPhone } from "@/lib/phone";
@@ -15,7 +14,12 @@ type Errors = { name?: string; phone?: string; submit?: string };
 const inputClass =
   "mt-1 w-full rounded-[0.75rem] border border-cream-300 bg-cream-50 px-4 py-3 text-base text-ink-900 placeholder:text-ink-400 focus:border-pine-800";
 
-export default function LeadForm() {
+type LeadFormProps = {
+  /** Codes currently available, resolved on the server with the same read as the plan. */
+  availableLotIds: readonly string[];
+};
+
+export default function LeadForm({ availableLotIds }: LeadFormProps) {
   const attribution = useAttribution();
   const fieldId = useId();
 
@@ -28,7 +32,6 @@ export default function LeadForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submittedName, setSubmittedName] = useState<string | null>(null);
 
-  const available = SELLABLE_LOTS.filter((entry) => entry.status === "disponible");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -140,9 +143,9 @@ export default function LeadForm() {
           className={inputClass}
         >
           <option value="">{copy.lotNone}</option>
-          {available.map((entry) => (
-            <option key={entry.id} value={entry.id}>
-              {entry.id}
+          {availableLotIds.map((id) => (
+            <option key={id} value={id}>
+              {id}
             </option>
           ))}
         </select>

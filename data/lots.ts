@@ -1,8 +1,10 @@
 /**
- * Lot inventory and status. Hand-edited — there is no database and no API.
+ * Lot inventory: the geometry-facing facts, and the FALLBACK status.
  *
- * To change what the plot map shows, edit `status` below and redeploy:
- *   "disponible" | "apartado" | "vendido"
+ * Live status comes from the admin database (see lib/lot-status.ts) and overrides the
+ * `status` below whenever that read succeeds. What is written here is only what the page
+ * shows if the database cannot be reached, so keep it roughly current — but the admin app,
+ * not this file, is where a lot gets marked apartado or vendido.
  *
  * `inInventory: false` lots belong to third parties. They always render as sold and
  * never count toward the availability counter — do not flip them.
@@ -14,7 +16,18 @@
  * the artwork and nothing to render. The 13 sellable lots below sum to 2,220.76 m².
  */
 
-export type LotStatus = "disponible" | "apartado" | "vendido";
+/**
+ * Mirrors the admin database's `units.status` check constraint exactly.
+ * `no_disponible` is a lot withdrawn from sale: shown like a sold lot, labelled honestly.
+ */
+export type LotStatus = "disponible" | "apartado" | "vendido" | "no_disponible";
+
+export const LOT_STATUSES: readonly LotStatus[] = [
+  "disponible",
+  "apartado",
+  "vendido",
+  "no_disponible",
+];
 
 export type Lot = {
   /** Matches the `id` attribute of the lot's `<path>` in the plot map artwork. */
@@ -34,20 +47,20 @@ export type Lot = {
 
 export const LOTS: readonly Lot[] = [
   { id: "L-77", area: 170.0, inInventory: false, status: "vendido", anchor: { x: 44.8, y: 78.5 } },
-  // PLACEHOLDER: confirm the live status of every lot below before launch.
+  // Fallback only — matches the admin database as of 2026-09-11.
   { id: "L-78", area: 182.78, inInventory: true, status: "disponible", anchor: { x: 69.7, y: 68.7 } },
   { id: "L-79", area: 185.12, inInventory: true, status: "disponible", anchor: { x: 94.5, y: 58.7 } },
   { id: "L-80", area: 175.94, inInventory: true, status: "disponible", anchor: { x: 120.2, y: 50.0 } },
   { id: "L-81", area: 165.89, inInventory: true, status: "disponible", anchor: { x: 51.7, y: 143.6 } },
-  { id: "L-82", area: 168.74, inInventory: true, status: "disponible", anchor: { x: 79.0, y: 133.2 } },
+  { id: "L-82", area: 168.74, inInventory: true, status: "apartado", anchor: { x: 79.0, y: 133.2 } },
   { id: "L-83", area: 168.74, inInventory: true, status: "disponible", anchor: { x: 106.3, y: 122.4 } },
   { id: "L-84", area: 168.74, inInventory: true, status: "disponible", anchor: { x: 132.4, y: 111.9 } },
-  { id: "L-85", area: 163.22, inInventory: true, status: "disponible", anchor: { x: 158.2, y: 100.5 } },
-  { id: "L-86", area: 158.58, inInventory: true, status: "disponible", anchor: { x: 161.8, y: 138.1 } },
+  { id: "L-85", area: 163.22, inInventory: true, status: "apartado", anchor: { x: 158.2, y: 100.5 } },
+  { id: "L-86", area: 158.58, inInventory: true, status: "apartado", anchor: { x: 161.8, y: 138.1 } },
   { id: "L-87", area: 168.74, inInventory: true, status: "disponible", anchor: { x: 136.7, y: 149.1 } },
   { id: "L-88", area: 168.74, inInventory: true, status: "disponible", anchor: { x: 110.0, y: 160.1 } },
-  { id: "L-89", area: 168.74, inInventory: true, status: "disponible", anchor: { x: 83.5, y: 170.9 } },
-  { id: "L-90", area: 176.79, inInventory: true, status: "disponible", anchor: { x: 54.3, y: 176.2 } },
+  { id: "L-89", area: 168.74, inInventory: true, status: "vendido", anchor: { x: 83.5, y: 170.9 } },
+  { id: "L-90", area: 176.79, inInventory: true, status: "apartado", anchor: { x: 54.3, y: 176.2 } },
 ];
 
 /** Lots offered for sale by the developer. */

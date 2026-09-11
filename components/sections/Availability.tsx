@@ -1,8 +1,11 @@
 import PlotMap from "@/components/plot-map/PlotMap";
+import { getLots } from "@/lib/lot-status";
 import { eyebrow, headline } from "@/components/ui";
 import { availability, nav } from "@/content/copy";
 
-export default function Availability() {
+export default async function Availability() {
+  const lots = await getLots();
+
   return (
     // No bottom padding at any width: the plan's own bottom edge is the end of the section.
     // At lg it is unpadded entirely — the plan fills the right half edge to edge and its
@@ -15,6 +18,7 @@ export default function Availability() {
       className="overflow-x-clip bg-cream-50 pt-16 sm:pt-24 lg:pt-0"
     >
       <PlotMap
+        lots={lots}
         header={
           <div>
             <p className={eyebrow}>{availability.eyebrow}</p>

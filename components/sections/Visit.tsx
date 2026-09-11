@@ -3,8 +3,16 @@ import MediaSlot from "@/components/MediaSlot";
 import WhatsAppLink from "@/components/WhatsAppLink";
 import { buttonPrimary, buttonSecondary, eyebrow, headline, sectionShell } from "@/components/ui";
 import { nav, visit } from "@/content/copy";
+import { effectiveStatus } from "@/data/lots";
+import { getLots } from "@/lib/lot-status";
 
-export default function Visit() {
+export default async function Visit() {
+  // Same read as the plan — Next dedupes the request — so the picker never offers a lot
+  // the plan shows as taken.
+  const availableLotIds = (await getLots())
+    .filter((lot) => effectiveStatus(lot) === "disponible")
+    .map((lot) => lot.id);
+
   return (
     <section id={nav.visitAnchor} className="bg-cream-100">
       <div className={sectionShell}>
@@ -27,7 +35,7 @@ export default function Visit() {
 
         <p className="mt-10 text-base text-ink-600">{visit.formIntro}</p>
         <div className="mt-4">
-          <LeadForm />
+          <LeadForm availableLotIds={availableLotIds} />
         </div>
 
         <div className="mt-12">

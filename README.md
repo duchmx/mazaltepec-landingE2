@@ -43,14 +43,37 @@ the browser. Do not prefix it with `NEXT_PUBLIC_`.
 
 ## Editing lot status
 
-Lot status is a hand-edited record — no database, no admin, no API.
+**Lot status comes from the admin app.** Mark a lot `apartado`, `vendido` or
+`no_disponible` there and this page follows within about a minute — no edit here, no
+redeploy. It reads the same database precios.mazaltepec.com reads (`mazaltepec-admin`).
 
-1. Open `data/lots.ts`.
-2. Change a lot's `status` to `"disponible"`, `"apartado"` or `"vendido"`.
-3. Commit and push. Vercel redeploys; the plot map tints and the form's lot dropdown both
-   follow automatically.
+How it works — `lib/lot-status.ts`:
 
-Rules baked in:
+- The page is static and regenerates in the background at most once a minute
+  (`revalidate = 60` in `app/page.tsx`). Visitors never wait on the database.
+- It reads the `public_lots` view — already readable by the anonymous role — filtered to
+  `jardines-de-mazaltepec`, phase 2, type `lote`, and asks for **only `code` and `status`**.
+  That view also carries `list_price` and the premium/estándar tier, which this page must
+  never publish, so they are never requested.
+- The read runs only on the server (`server-only`), so neither the key nor the query ever
+  reaches the browser.
+- A lot missing from a successful read has been unpublished in the admin app and shows as
+  *No disponible*, never as available.
+- **If the database can't be reached** — no credentials, network error, bad key — the page
+  falls back to the statuses in `data/lots.ts` and logs why. It never breaks. Keep that file
+  roughly current as a safety net, but it is no longer where status is managed.
+
+Areas, anchors and the third-party flag always come from `data/lots.ts`, whatever the
+database says: they are tied to the drawing, and the published areas must sum to
+2,220.76 m² (`npm test` checks).
+
+Setup — two server-only variables, in Vercel → Project `land` → Settings → Environment
+Variables, and in `.env.local` for development:
+
+```
+SUPABASE_URL=https://ameoullltomkvomsbbmc.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_…   # Supabase → Project Settings → API Keys
+```
 
 - L-77 is third-party owned (`inInventory: false`). It always renders as sold and is never
   offered in the form's lot picker. Leave it alone.

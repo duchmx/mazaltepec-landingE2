@@ -4,7 +4,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { availability, whatsappHint } from "@/content/copy";
-import { effectiveStatus, formatArea, getLot, LOTS, type Lot, type LotStatus } from "@/data/lots";
+import { effectiveStatus, formatArea, type Lot, type LotStatus } from "@/data/lots";
 import {
   PLOT_MAP_BASE,
   PLOT_MAP_VIEW_BOX,
@@ -30,6 +30,7 @@ const STATUS_TINT: Record<LotStatus, { fill: string; opacity: number }> = {
   disponible: { fill: "transparent", opacity: 0 },
   apartado: { fill: "var(--color-camel-500)", opacity: 0.5 },
   vendido: { fill: "var(--color-cream-50)", opacity: 0.72 },
+  no_disponible: { fill: "var(--color-cream-50)", opacity: 0.72 },
 };
 
 /** Legend swatches approximate what each status looks like over the plan's green. */
@@ -37,13 +38,18 @@ const LEGEND_SWATCH: Record<LotStatus, string> = {
   disponible: "#8CA85F",
   apartado: "#A8A177",
   vendido: "#DCE0D2",
+  no_disponible: "#DCE0D2",
 };
 
 const LABEL_FILL: Record<LotStatus, string> = {
   disponible: "var(--color-cream-50)",
   apartado: "var(--color-ink-900)",
   vendido: "var(--color-ink-600)",
+  no_disponible: "var(--color-ink-600)",
 };
+
+/** The key shows the three states people ask about; a withdrawn lot looks like a sold one. */
+const LEGEND_STATUSES: readonly LotStatus[] = ["disponible", "apartado", "vendido"];
 
 type LotLabel = { id: string; x: number; y: number; status: LotStatus };
 
@@ -80,9 +86,14 @@ function LotCta({ lot, status, className = "" }: { lot: Lot; status: LotStatus; 
  * Status paint is emitted as CSS keyed on the artwork's own `id` attributes, so the map is
  * correct on the server and stays correct after the artwork is swapped.
  */
-function statusStyles(): string {
-  const byStatus: Record<LotStatus, string[]> = { disponible: [], apartado: [], vendido: [] };
-  for (const lot of LOTS) {
+function statusStyles(lots: readonly Lot[]): string {
+  const byStatus: Record<LotStatus, string[]> = {
+    disponible: [],
+    apartado: [],
+    vendido: [],
+    no_disponible: [],
+  };
+  for (const lot of lots) {
     byStatus[effectiveStatus(lot)].push(`#${MAP_ID} [id="${lot.id}"]`);
   }
 
@@ -99,7 +110,7 @@ function statusStyles(): string {
     `#${MAP_ID} [data-lot-status]{outline:none;cursor:pointer;transition:fill-opacity 120ms cubic-bezier(0.2,0,0,1)}`,
     `#${MAP_ID} [data-lot-status="disponible"]:hover{fill:var(--color-pine-800);fill-opacity:0.28}`,
     `#${MAP_ID} [data-lot-status="apartado"]:hover{fill:var(--color-camel-700);fill-opacity:0.6}`,
-    `#${MAP_ID} [data-lot-status="vendido"]:hover{fill:var(--color-ink-400);fill-opacity:0.4}`,
+    `#${MAP_ID} [data-lot-status="vendido"]:hover,#${MAP_ID} [data-lot-status="no_disponible"]:hover{fill:var(--color-ink-400);fill-opacity:0.4}`,
     `#${MAP_ID} [data-lot-selected="true"]{fill:var(--color-pine-800);fill-opacity:0.55;stroke:var(--color-cream-50);stroke-opacity:1;stroke-width:0.9}`,
     `#${MAP_ID} [data-lot-status]:focus-visible{stroke:var(--color-ink-900);stroke-opacity:1;stroke-width:1.4}`,
     `@media (prefers-reduced-motion: reduce){#${MAP_ID} [data-lot-status]{transition:none}}`,
@@ -110,6 +121,11 @@ function statusStyles(): string {
 
 type PlotMapProps = {
   /**
+   * Every lot with its current status, resolved on the server — from the admin database
+   * when it answers, from data/lots.ts when it does not. This component never fetches.
+   */
+  lots: readonly Lot[];
+  /**
    * The section's eyebrow and headline. Rendered on the server and passed in, because the
    * two-column layout is the map's own — the header sits in its left column, above the
    * selected lot, and the plan runs flush to the page edge on the right.
@@ -117,13 +133,13 @@ type PlotMapProps = {
   header: ReactNode;
 };
 
-export default function PlotMap({ header }: PlotMapProps) {
+export default function PlotMap({ lots, header }: PlotMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [measured, setMeasured] = useState<LotLabel[]>([]);
-  const styles = useMemo(statusStyles, []);
+  const styles = useMemo(() => statusStyles(lots), [lots]);
 
-  const selectedLot = selected ? getLot(selected) : undefined;
+  const selectedLot = selected ? lots.find((lot) => lot.id === selected) : undefined;
 
   const select = useCallback((id: string) => {
     setSelected((current) => (current === id ? null : id));
@@ -140,7 +156,7 @@ export default function PlotMap({ header }: PlotMapProps) {
 
     const cleanups: Array<() => void> = [];
 
-    for (const lot of LOTS) {
+    for (const lot of lots) {
       const node = svg.querySelector<SVGGraphicsElement>(`[id="${lot.id}"]`);
       if (!node) continue;
 
@@ -176,7 +192,7 @@ export default function PlotMap({ header }: PlotMapProps) {
     }
 
     return () => cleanups.forEach((cleanup) => cleanup());
-  }, [select]);
+  }, [lots, select]);
 
   /**
    * Lot numbers are positioned from the data's anchors, never baked into the artwork.
@@ -186,10 +202,10 @@ export default function PlotMap({ header }: PlotMapProps) {
   useLayoutEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
-    if (LOTS.every((lot) => lot.anchor)) return;
+    if (lots.every((lot) => lot.anchor)) return;
 
     const found: LotLabel[] = [];
-    for (const lot of LOTS) {
+    for (const lot of lots) {
       if (lot.anchor) continue;
       const node = svg.querySelector<SVGGraphicsElement>(`[id="${lot.id}"]`);
       if (!node) continue;
@@ -202,27 +218,27 @@ export default function PlotMap({ header }: PlotMapProps) {
       });
     }
     setMeasured(found);
-  }, []);
+  }, [lots]);
 
   const labels: LotLabel[] = useMemo(() => {
     const fallback = new Map(measured.map((label) => [label.id, label]));
-    return LOTS.flatMap((lot) => {
+    return lots.flatMap((lot) => {
       const point = lot.anchor ?? fallback.get(lot.id);
       if (!point) return [];
       return [{ id: lot.id, x: point.x, y: point.y, status: effectiveStatus(lot) }];
     });
-  }, [measured]);
+  }, [lots, measured]);
 
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
-    for (const lot of LOTS) {
+    for (const lot of lots) {
       const node = svg.querySelector<SVGGraphicsElement>(`[id="${lot.id}"]`);
       if (!node) continue;
       if (lot.id === selected) node.setAttribute("data-lot-selected", "true");
       else node.removeAttribute("data-lot-selected");
     }
-  }, [selected]);
+  }, [lots, selected]);
 
   const status = selectedLot ? effectiveStatus(selectedLot) : null;
 
@@ -287,7 +303,7 @@ export default function PlotMap({ header }: PlotMapProps) {
         </p>
 
         <ul className="mt-5 flex flex-col gap-1.5 text-sm text-ink-600 lg:mt-10 lg:flex-row lg:flex-wrap lg:gap-x-5 lg:gap-y-2">
-          {(Object.keys(STATUS_TINT) as LotStatus[]).map((key) => (
+          {LEGEND_STATUSES.map((key) => (
             <li key={key} className="flex items-center gap-2">
               <span
                 aria-hidden="true"

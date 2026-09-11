@@ -22,9 +22,11 @@ All other Spanish copy is final as given and lives in `content/copy.ts`.
 
 | What | File | Replace with |
 |---|---|---|
-| Status of every lot L-78 … L-90 (all `disponible` today) | `data/lots.ts` → `LOTS` | The real status of each lot: `disponible`, `apartado` or `vendido`. The map tint and the form's lot picker follow automatically. |
 
 Not placeholders — do not change without a source document:
+
+- Lot status. It is live from the admin app (see README); `data/lots.ts` only holds the
+  fallback shown if the database cannot be reached.
 
 - Lot areas. The 13 sellable lots sum to exactly 2,220.76 m², asserted in `tests/lots.test.ts`.
 - L-77 is third-party owned: `inInventory: false`, always rendered as sold and excluded from

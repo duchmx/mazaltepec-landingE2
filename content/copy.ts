@@ -60,6 +60,8 @@ export const availability = {
     disponible: "Disponible",
     apartado: "Apartado",
     vendido: "Vendido",
+    /** Withdrawn from sale in the admin app. Not in the key; shown only on a selected lot. */
+    no_disponible: "No disponible",
   },
   lotLabel: "Lote",
   areaUnit: "m²",
