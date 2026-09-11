@@ -67,13 +67,17 @@ Areas, anchors and the third-party flag always come from `data/lots.ts`, whateve
 database says: they are tied to the drawing, and the published areas must sum to
 2,220.76 m² (`npm test` checks).
 
-Setup — two server-only variables, in Vercel → Project `land` → Settings → Environment
-Variables, and in `.env.local` for development:
+Setup — on Vercel, the Supabase integration on project `land` provides `SUPABASE_URL` and
+`SUPABASE_ANON_KEY`, which is all this needs. For development, in `.env.local`:
 
 ```
 SUPABASE_URL=https://ameoullltomkvomsbbmc.supabase.co
-SUPABASE_PUBLISHABLE_KEY=sb_publishable_…   # Supabase → Project Settings → API Keys
+SUPABASE_ANON_KEY=…              # or SUPABASE_PUBLISHABLE_KEY=sb_publishable_…, which wins
 ```
+
+The integration also installs `SUPABASE_SERVICE_ROLE_KEY` and `POSTGRES_*`. This page never
+reads them — they bypass row-level security entirely — and they are safer removed from this
+project, since nothing here needs them.
 
 - L-77 is third-party owned (`inInventory: false`). It always renders as sold and is never
   offered in the form's lot picker. Leave it alone.

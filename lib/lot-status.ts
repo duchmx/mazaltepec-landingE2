@@ -29,18 +29,38 @@ const QUERY = new URLSearchParams({
   type: "eq.lote",
 }).toString();
 
-export async function getLots(): Promise<Lot[]> {
+/**
+ * The Vercel ↔ Supabase integration sets SUPABASE_URL and SUPABASE_ANON_KEY (the legacy
+ * anon JWT); a hand-set SUPABASE_PUBLISHABLE_KEY (sb_publishable_…) wins when present.
+ * Either is the public, row-level-security-bound key. Never the service role key the
+ * integration also installs — that one bypasses every policy and has no business here.
+ */
+function credentials(): { url: string; key: string } | null {
   const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+  return url && key ? { url, key } : null;
+}
 
-  if (!url || !key) {
-    console.warn("Lot status: SUPABASE_URL or SUPABASE_PUBLISHABLE_KEY not set; using data/lots.ts.");
+/** Publishable keys go in `apikey` alone; a legacy anon JWT also rides as the bearer. */
+function authHeaders(key: string): Record<string, string> {
+  return key.startsWith("sb_publishable_")
+    ? { apikey: key }
+    : { apikey: key, Authorization: `Bearer ${key}` };
+}
+
+export async function getLots(): Promise<Lot[]> {
+  const creds = credentials();
+
+  if (!creds) {
+    console.warn(
+      "Lot status: SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY / SUPABASE_ANON_KEY not set; using data/lots.ts.",
+    );
     return [...LOTS];
   }
 
   try {
-    const response = await fetch(`${url}/rest/v1/public_lots?${QUERY}`, {
-      headers: { apikey: key, Accept: "application/json" },
+    const response = await fetch(`${creds.url}/rest/v1/public_lots?${QUERY}`, {
+      headers: { ...authHeaders(creds.key), Accept: "application/json" },
       next: { revalidate: LOT_STATUS_REVALIDATE, tags: ["lot-status"] },
       signal: AbortSignal.timeout(5000),
     });
