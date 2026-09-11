@@ -31,13 +31,31 @@ export default function Visit() {
         </div>
 
         <div className="mt-12">
-          <MediaSlot
-            ratio="16/9"
-            tone="cream-200"
-            label={visit.mediaLabel}
-            className="rounded-[0.75rem]"
-          />
-          <div className="mt-4">
+          {/*
+           * The sketch's street names are small — about 7px at full column width, and far
+           * less on a phone — so the image opens at full size, where pinch-zoom makes them
+           * readable. The link's accessible name is the alt text followed by where it goes.
+           */}
+          <a
+            href={visit.map.src}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block cursor-zoom-in rounded-[0.75rem]"
+          >
+            <MediaSlot
+              ratio={visit.map.ratio}
+              tone="cream-200"
+              label={visit.map.alt}
+              src={visit.map.src}
+              alt={visit.map.alt}
+              sizes="(min-width: 1024px) 960px, 100vw"
+              className="rounded-[0.75rem] border border-cream-300"
+            />
+            <span className="sr-only"> {visit.map.zoomLabel}</span>
+          </a>
+          <p className="mt-2 text-xs text-ink-400">{visit.map.zoomHint}</p>
+
+          <div className="mt-5">
             <a
               href={visit.directionsHref}
               target="_blank"

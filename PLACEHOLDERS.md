@@ -44,7 +44,9 @@ README, "Replacing a MediaSlot with real media".
 | Slot | Section / file | Ratio | Tone | Intended asset |
 |---|---|---|---|---|
 | `HERO — aerial video loop` | `components/sections/Hero.tsx` | fills the viewport | `pine-800` | Aerial loop of the built subdivision, behind the hero copy. |
-| `VISITA — mapa de ubicación` | `components/sections/Visit.tsx` | `16/9` | `cream-200` | Static map image of the location. No live Google Maps embed. |
+
+The Visit section's location sketch is **not** a placeholder any more: it is
+`public/media/visita/croquis.webp`, set in `content/copy.ts` → `visit.map`.
 
 The subdivision marquee is **not** a placeholder any more: its ten photographs are
 listed in `content/copy.ts` → `subdivision.slides` and live in

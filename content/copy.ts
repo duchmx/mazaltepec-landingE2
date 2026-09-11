@@ -125,8 +125,21 @@ export const visit = {
   ],
   ctaWhatsApp: "Agenda tu visita",
   formIntro: "o déjanos tus datos y te contactamos hoy mismo:",
-  // PLACEHOLDER: media slot — 16/9 static map image of the location.
-  mediaLabel: "VISITA — mapa de ubicación",
+  /**
+   * Static location sketch — deliberately not a live Google Maps embed, which is heavy on
+   * a phone and needs an API key. "Cómo llegar" below it opens the real pin for directions.
+   * The file is optimised from the designer's PNG and flattened onto cream-50, where its
+   * label grey reads at 5.3:1; the PNG itself was drawn on black.
+   */
+  map: {
+    src: "/media/visita/croquis.webp",
+    /** Its own ratio, so the slot never crops the labels at the edges. */
+    ratio: "3600/2019",
+    alt: "Croquis de ubicación de Jardines de Mazaltepec, sobre el Libramiento Villahermosa, junto a Sol Campestre y cerca del Boulevard Bicentenario, Plaza Country y Plaza Cedros.",
+    /** Read after the alt text, so the link says where it goes. */
+    zoomLabel: "Abrir el croquis en tamaño completo",
+    zoomHint: "Toca el croquis para verlo en tamaño completo.",
+  },
   directions: "Cómo llegar →",
   // PLACEHOLDER: replace with the exact Google Maps pin for the Etapa 2 sales access.
   directionsHref: "https://www.google.com/maps/place/Jardines+de+Mazaltepec/@18.024908,-92.9877243,944m/data=!3m1!1e3!4m6!3m5!1s0x85ee79195e241269:0xf63e467912e524af!8m2!3d18.024908!4d-92.9877243!16s%2Fg%2F11gmvdjqcz?entry=ttu&g_ep=EgoyMDI2MDkwMi4wIKXMDSoASAFQAw%3D%3D",
