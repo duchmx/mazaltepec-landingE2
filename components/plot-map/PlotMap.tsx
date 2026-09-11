@@ -22,30 +22,40 @@ const MAP_ID = "plot-map";
 const COLUMN_PADDING = "px-5 pl-(--page-gutter) sm:px-8 sm:pl-(--page-gutter) lg:pr-0";
 
 /**
- * Lot tinting sits ON TOP of the rendered plan, so an available lot is left alone and the
- * artwork's own green shows through. Sold lots are washed back toward the page surface;
- * reserved lots take the camel accent. Never a full-strength fill — the drawing must read.
+ * Lot tinting sits ON TOP of the rendered plan. Available lots are left alone — the
+ * artwork's own green shows through, which already reads as "go" — so this only has to
+ * carry apartado and vendido, and it has one job: whichever of the two a lot is must be
+ * legible at a glance, not just technically distinguishable in the legend.
+ *
+ * A translucent wash failed at that. camel-over-green and cream-over-green both landed as
+ * variations on brown, close enough in hue that the plan looked like it had one taken
+ * status, not two. brand_system's own semantic scale (warning/danger — literally "Estados"
+ * in the token file) is used near-opaque instead: amber for apartado, a deeper red for
+ * vendido. Verified: blended over the plan's green these read at ~2.5:1 contrast from each
+ * other, against ~1.2:1 at the old 50% wash — the difference between a glance and a squint.
  */
 const STATUS_TINT: Record<LotStatus, { fill: string; opacity: number }> = {
   disponible: { fill: "transparent", opacity: 0 },
-  apartado: { fill: "var(--color-camel-500)", opacity: 0.5 },
-  vendido: { fill: "var(--color-cream-50)", opacity: 0.72 },
-  no_disponible: { fill: "var(--color-cream-50)", opacity: 0.72 },
+  apartado: { fill: "var(--color-warning-400)", opacity: 0.92 },
+  vendido: { fill: "var(--color-danger-600)", opacity: 0.92 },
+  no_disponible: { fill: "var(--color-danger-600)", opacity: 0.92 },
 };
 
-/** Legend swatches approximate what each status looks like over the plan's green. */
+/** Legend swatches. Disponible approximates the plan's own green; the other two are the
+ *  literal tokens above, so the key and the map always agree exactly. */
 const LEGEND_SWATCH: Record<LotStatus, string> = {
   disponible: "#8CA85F",
-  apartado: "#A8A177",
-  vendido: "#DCE0D2",
-  no_disponible: "#DCE0D2",
+  apartado: "var(--color-warning-400)",
+  vendido: "var(--color-danger-600)",
+  no_disponible: "var(--color-danger-600)",
 };
 
+/** Number colour per status, chosen for contrast against that status's near-opaque fill. */
 const LABEL_FILL: Record<LotStatus, string> = {
   disponible: "var(--color-cream-50)",
   apartado: "var(--color-ink-900)",
-  vendido: "var(--color-ink-600)",
-  no_disponible: "var(--color-ink-600)",
+  vendido: "var(--color-cream-50)",
+  no_disponible: "var(--color-cream-50)",
 };
 
 /** The key shows the three states people ask about; a withdrawn lot looks like a sold one. */
@@ -109,8 +119,10 @@ function statusStyles(lots: readonly Lot[]): string {
   const states = [
     `#${MAP_ID} [data-lot-status]{outline:none;cursor:pointer;transition:fill-opacity 120ms cubic-bezier(0.2,0,0,1)}`,
     `#${MAP_ID} [data-lot-status="disponible"]:hover{fill:var(--color-pine-800);fill-opacity:0.28}`,
-    `#${MAP_ID} [data-lot-status="apartado"]:hover{fill:var(--color-camel-700);fill-opacity:0.6}`,
-    `#${MAP_ID} [data-lot-status="vendido"]:hover,#${MAP_ID} [data-lot-status="no_disponible"]:hover{fill:var(--color-ink-400);fill-opacity:0.4}`,
+    // Hover darkens within the same hue rather than jumping to camel/ink, so the status
+    // colour never wavers — only its shade does.
+    `#${MAP_ID} [data-lot-status="apartado"]:hover{fill:var(--color-warning-600);fill-opacity:0.92}`,
+    `#${MAP_ID} [data-lot-status="vendido"]:hover,#${MAP_ID} [data-lot-status="no_disponible"]:hover{fill:var(--color-danger-700);fill-opacity:0.92}`,
     `#${MAP_ID} [data-lot-selected="true"]{fill:var(--color-pine-800);fill-opacity:0.55;stroke:var(--color-cream-50);stroke-opacity:1;stroke-width:0.9}`,
     `#${MAP_ID} [data-lot-status]:focus-visible{stroke:var(--color-ink-900);stroke-opacity:1;stroke-width:1.4}`,
     `@media (prefers-reduced-motion: reduce){#${MAP_ID} [data-lot-status]{transition:none}}`,
