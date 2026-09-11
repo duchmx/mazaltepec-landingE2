@@ -39,6 +39,11 @@ type MediaSlotProps = {
   alt?: string;
   /** True for the block that is largest in the mobile viewport on first paint. */
   priority?: boolean;
+  /**
+   * How wide the slot renders, for next/image to pick a file. The default suits a slot
+   * that spans a column; anything narrower should say so or it downloads too much.
+   */
+  sizes?: string;
   className?: string;
 };
 
@@ -50,6 +55,7 @@ export default function MediaSlot({
   src,
   alt,
   priority = false,
+  sizes = "(max-width: 768px) 100vw, 50vw",
   className = "",
 }: MediaSlotProps) {
   const isDev = process.env.NODE_ENV === "development";
@@ -67,7 +73,7 @@ export default function MediaSlot({
           alt={alt ?? ""}
           fill
           priority={priority}
-          sizes="(max-width: 768px) 100vw, 50vw"
+          sizes={sizes}
           className="object-cover"
         />
       ) : (

@@ -44,8 +44,11 @@ README, "Replacing a MediaSlot with real media".
 | Slot | Section / file | Ratio | Tone | Intended asset |
 |---|---|---|---|---|
 | `HERO — aerial video loop` | `components/sections/Hero.tsx` | fills the viewport | `pine-800` | Aerial loop of the built subdivision, behind the hero copy. |
-| `FRACCIONAMIENTO 1…6` | `content/copy.ts` → `subdivision.mediaLabels` | `4/5` | cycled | Six stills or renders of the built subdivision, scrolling edge to edge. The list drives the marquee — add or remove entries and it adapts; tones cycle automatically. |
 | `VISITA — mapa de ubicación` | `components/sections/Visit.tsx` | `16/9` | `cream-200` | Static map image of the location. No live Google Maps embed. |
+
+The subdivision marquee is **not** a placeholder any more: its ten photographs are
+listed in `content/copy.ts` → `subdivision.slides` and live in
+`public/media/fraccionamiento/` as optimised WebP.
 
 The logo, favicon and og:image are **not** placeholders — they come from the vendored
 brand system and are final. See README, "Brand system".

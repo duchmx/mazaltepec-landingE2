@@ -23,7 +23,7 @@ export default function Subdivision() {
       {/* Full-bleed: the marquee runs edge to edge, outside the centred text column. */}
       <div className="mt-10">
         <MediaMarquee
-          labels={subdivision.mediaLabels}
+          slides={subdivision.slides}
           ariaLabel={subdivision.carouselLabel}
         />
       </div>

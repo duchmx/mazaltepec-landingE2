@@ -97,15 +97,22 @@ export const subdivision = {
   ctaHref: "https://www.mazaltepec.com",
   /** Screen-reader name for the marquee, which is otherwise decorative. */
   carouselLabel: "Imágenes del fraccionamiento",
-  // PLACEHOLDER: media slots — 4/5 stills and renders of the built subdivision, in the
-  // order they scroll. Add or remove entries freely; the marquee adapts to any count.
-  mediaLabels: [
-    "FRACCIONAMIENTO 1 — parque y senderos",
-    "FRACCIONAMIENTO 2 — alberca",
-    "FRACCIONAMIENTO 3 — cancha de pádel",
-    "FRACCIONAMIENTO 4 — gimnasio al aire libre",
-    "FRACCIONAMIENTO 5 — acceso controlado",
-    "FRACCIONAMIENTO 6 — calles habitadas",
+  /**
+   * The marquee, in the order it scrolls. Files live in public/media/fraccionamiento/ as
+   * optimised WebP — the originals are not served. Add, remove or reorder freely: the
+   * marquee adapts to any count. `alt` describes what is in the frame, in Spanish.
+   */
+  slides: [
+    { src: "/media/fraccionamiento/acceso.webp", alt: "Acceso principal del fraccionamiento, con palmera y caseta de vigilancia" },
+    { src: "/media/fraccionamiento/paseo.webp", alt: "Pareja caminando por un sendero bajo un árbol en flor" },
+    { src: "/media/fraccionamiento/alberca.webp", alt: "Alberca con palapa y área de descanso" },
+    { src: "/media/fraccionamiento/padel.webp", alt: "Cancha de pádel" },
+    { src: "/media/fraccionamiento/hamaca.webp", alt: "Hamaca bajo una pérgola con enredaderas junto a la alberca" },
+    { src: "/media/fraccionamiento/arbol-en-flor.webp", alt: "Árbol con flores rosas contra el cielo" },
+    { src: "/media/fraccionamiento/gimnasio.webp", alt: "Gimnasio al aire libre a la sombra de los árboles" },
+    { src: "/media/fraccionamiento/pergolas.webp", alt: "Pérgolas con bancas en el parque" },
+    { src: "/media/fraccionamiento/vigilancia.webp", alt: "Vigilante saludando en la caseta de acceso" },
+    { src: "/media/fraccionamiento/mascota.webp", alt: "Perro descansando en el pasto del parque" },
   ],
 } as const;
 
