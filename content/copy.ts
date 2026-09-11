@@ -17,7 +17,7 @@ export const site = {
 export const topBar = {
   /** The only nav item on the page: back to the main subdivision site. */
   homeLabel: "Volver a mazaltepec.com",
-  homeHref: "https://wwww.mazaltepec.com",
+  homeHref: "https://www.mazaltepec.com",
 } as const;
 
 /**
@@ -37,7 +37,7 @@ export const hero = {
   headline: ["Los últimos lotes residenciales", "en Jardines de Mazaltepec."],
   body: [
     "Un fraccionamiento que ya está construido, habitado y funcionando.",
-    "En la zona Country de Villahermosa.",
+    "En la Zona Country de Villahermosa.",
   ],
   price: "Lotes desde $1,560,000",
   // PLACEHOLDER: the brief's hero block says "Precio de contado." while its money rules say
