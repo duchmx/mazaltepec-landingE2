@@ -20,7 +20,7 @@ import { applyLiveStatus, parseStatusRows } from "@/lib/lot-status-core";
  */
 
 /** Seconds a status can be stale. The page regenerates in the background at most this often. */
-export const LOT_STATUS_REVALIDATE = 60;
+export const LOT_STATUS_REVALIDATE = 6;
 
 const QUERY = new URLSearchParams({
   select: "code,status",
