@@ -363,20 +363,53 @@ export default function PlotMap({ lots, header }: PlotMapProps) {
 
           {/* Lot numbers, drawn over the artwork. The paths carry the accessible names. */}
           <g aria-hidden="true" pointerEvents="none">
-            {labels.map((label) => (
-              <text
-                key={label.id}
-                x={label.x}
-                y={label.y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize="7"
-                fontWeight="500"
-                fill={label.id === selected ? "var(--color-cream-50)" : LABEL_FILL[label.status]}
-              >
-                {label.id.replace("L-", "")}
-              </text>
-            ))}
+            {labels.map((label) => {
+              const sold = label.status === "vendido" || label.status === "no_disponible";
+              const fill = label.id === selected ? "var(--color-cream-50)" : LABEL_FILL[label.status];
+              return (
+                <g key={label.id}>
+                  {sold ? (
+                    <g transform={`translate(${label.x} ${label.y + 3.4}) rotate(-30)`}>
+                      <rect x="-13" y="-2.4" width="26" height="4.8" fill="var(--color-ink-900)" fillOpacity="0.82" />
+                      <text
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fontSize="3"
+                        fontWeight="700"
+                        letterSpacing="0.6"
+                        fill="var(--color-cream-50)"
+                      >
+                        VENDIDO
+                      </text>
+                    </g>
+                  ) : null}
+                  <text
+                    x={label.x}
+                    y={sold ? label.y - 3.4 : label.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="7"
+                    fontWeight="500"
+                    fill={fill}
+                  >
+                    {label.id.replace("L-", "")}
+                  </text>
+                  {!sold ? (
+                    <text
+                      x={label.x}
+                      y={label.y + 5.6}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize="2.6"
+                      fontWeight="500"
+                      fill={fill}
+                    >
+                      {availability.legend[label.status].toLowerCase()}
+                    </text>
+                  ) : null}
+                </g>
+              );
+            })}
           </g>
         </svg>
 

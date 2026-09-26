@@ -7,11 +7,10 @@ import Subdivision from "@/components/sections/Subdivision";
 import Visit from "@/components/sections/Visit";
 
 /**
- * Lot status is read from the admin database, so the page is regenerated in the background
- * at most once a minute (lib/lot-status.ts). Visitors are still served a static page —
- * nothing here waits on the database per request.
+ * Lot status is read from the admin database on every request (lib/lot-status.ts), so the
+ * page is always current — never a cached copy.
  */
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default function Page() {
   return (

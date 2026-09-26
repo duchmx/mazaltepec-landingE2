@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { LOTS, type Lot } from "@/data/lots";
 import { applyLiveStatus, parseStatusRows } from "@/lib/lot-status-core";
 
@@ -15,12 +16,11 @@ import { applyLiveStatus, parseStatusRows } from "@/lib/lot-status-core";
  * and the premium/estándar tier, and this page may publish neither — so they are never
  * requested, and never leave the database on this request.
  *
- * Every failure — no credentials, network error, bad response — falls back to the statuses
- * in data/lots.ts and logs why. The page never breaks over this.
+ * There is no fallback: the database is the only source of lot status. If it cannot be read
+ * this throws rather than quietly showing statuses copied into data/lots.ts that may be
+ * days out of date. Fetched uncached, once per request (`cache` dedupes the sections that
+ * both need it).
  */
-
-/** Seconds a status can be stale. The page regenerates in the background at most this often. */
-export const LOT_STATUS_REVALIDATE = 6;
 
 const QUERY = new URLSearchParams({
   select: "code,status",
@@ -48,37 +48,21 @@ function authHeaders(key: string): Record<string, string> {
     : { apikey: key, Authorization: `Bearer ${key}` };
 }
 
-export async function getLots(): Promise<Lot[]> {
+export const getLots = cache(async function getLots(): Promise<Lot[]> {
   const creds = credentials();
-
   if (!creds) {
-    console.warn(
-      "Lot status: SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY / SUPABASE_ANON_KEY not set; using data/lots.ts.",
-    );
-    return [...LOTS];
+    throw new Error("Lot status: SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY / SUPABASE_ANON_KEY not set.");
   }
 
-  try {
-    const response = await fetch(`${creds.url}/rest/v1/public_lots?${QUERY}`, {
-      headers: { ...authHeaders(creds.key), Accept: "application/json" },
-      next: { revalidate: LOT_STATUS_REVALIDATE, tags: ["lot-status"] },
-      signal: AbortSignal.timeout(5000),
-    });
+  const response = await fetch(`${creds.url}/rest/v1/public_lots?${QUERY}`, {
+    headers: { ...authHeaders(creds.key), Accept: "application/json" },
+    cache: "no-store",
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!response.ok) throw new Error(`Lot status: database answered ${response.status}.`);
 
-    if (!response.ok) {
-      console.error(`Lot status: database answered ${response.status}; using data/lots.ts.`);
-      return [...LOTS];
-    }
+  const live = parseStatusRows(await response.json());
+  if (!live || live.size === 0) throw new Error("Lot status: database returned no Etapa 2 lots.");
 
-    const live = parseStatusRows(await response.json());
-    if (!live || live.size === 0) {
-      console.error("Lot status: database returned no Etapa 2 lots; using data/lots.ts.");
-      return [...LOTS];
-    }
-
-    return applyLiveStatus(LOTS, live);
-  } catch (error) {
-    console.error("Lot status: read failed; using data/lots.ts.", error);
-    return [...LOTS];
-  }
-}
+  return applyLiveStatus(LOTS, live);
+});
