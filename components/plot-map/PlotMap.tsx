@@ -383,9 +383,21 @@ export default function PlotMap({ lots, header }: PlotMapProps) {
                   {sold ? (
                     // Stamped directly over the number — crossing out the info, not
                     // captioning it — so a sold lot reads as taken before the number
-                    // underneath is even read.
+                    // underneath is even read. A pill in brand_system's danger-700 — one
+                    // step darker than the lot's own danger-600 fill — so the stamp still
+                    // reads as its own shape rather than melting into the lot beneath it.
                     <g transform={`translate(${label.x} ${label.y}) rotate(-30)`}>
-                      <rect x="-13" y="-2.6" width="26" height="5.2" fill="var(--color-ink-900)" fillOpacity="0.92" />
+                      <rect
+                        x="-13"
+                        y="-2.6"
+                        width="26"
+                        height="5.2"
+                        rx="2.6"
+                        fill="var(--color-danger-700)"
+                        stroke="var(--color-cream-50)"
+                        strokeOpacity="0.55"
+                        strokeWidth="0.3"
+                      />
                       <text
                         textAnchor="middle"
                         dominantBaseline="central"
