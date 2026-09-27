@@ -368,9 +368,24 @@ export default function PlotMap({ lots, header }: PlotMapProps) {
               const fill = label.id === selected ? "var(--color-cream-50)" : LABEL_FILL[label.status];
               return (
                 <g key={label.id}>
+                  <text
+                    x={label.x}
+                    y={label.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="7"
+                    fontWeight="500"
+                    fill={fill}
+                    opacity={sold ? 0.55 : 1}
+                  >
+                    {label.id.replace("L-", "")}
+                  </text>
                   {sold ? (
-                    <g transform={`translate(${label.x} ${label.y + 3.4}) rotate(-30)`}>
-                      <rect x="-13" y="-2.4" width="26" height="4.8" fill="var(--color-ink-900)" fillOpacity="0.82" />
+                    // Stamped directly over the number — crossing out the info, not
+                    // captioning it — so a sold lot reads as taken before the number
+                    // underneath is even read.
+                    <g transform={`translate(${label.x} ${label.y}) rotate(-30)`}>
+                      <rect x="-13" y="-2.6" width="26" height="5.2" fill="var(--color-ink-900)" fillOpacity="0.92" />
                       <text
                         textAnchor="middle"
                         dominantBaseline="central"
@@ -383,17 +398,6 @@ export default function PlotMap({ lots, header }: PlotMapProps) {
                       </text>
                     </g>
                   ) : null}
-                  <text
-                    x={label.x}
-                    y={sold ? label.y - 3.4 : label.y}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize="7"
-                    fontWeight="500"
-                    fill={fill}
-                  >
-                    {label.id.replace("L-", "")}
-                  </text>
                   {!sold ? (
                     <text
                       x={label.x}

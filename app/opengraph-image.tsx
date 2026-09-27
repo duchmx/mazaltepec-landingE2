@@ -11,15 +11,25 @@ export const contentType = "image/png";
 
 /*
  * The vertical lockup, read from the vendored brand package and inlined — Satori cannot
- * resolve a React component or a relative URL, and the card is generated at build time.
- * `blanco` because the card ground is pine-800: the `color` variant's own pine would
- * disappear into it, which is the same rule the hero and footer follow.
+ * resolve a React component or a relative URL. `blanco` because the card ground is
+ * pine-800: the `color` variant's own pine would disappear into it, which is the same rule
+ * the hero and footer follow.
+ *
+ * Read at module scope, which normally runs once per cold start — but Next also calls this
+ * route's default export directly (not just over HTTP) to resolve `og:image` while
+ * rendering the page's own metadata, in a context that does not carry the same file
+ * tracing as a direct request to this route. A logo that fails to load there must not take
+ * the whole page down with it: same rule as the font load below, just for the image.
  */
-const logo = readFileSync(
-  join(process.cwd(), "brand_system/assets/logo/jm-vertical-blanco.svg"),
-  "utf8",
-);
-const logoDataUri = `data:image/svg+xml;base64,${Buffer.from(logo).toString("base64")}`;
+const logo = (() => {
+  try {
+    return readFileSync(join(process.cwd(), "brand_system/assets/logo/jm-vertical-blanco.svg"), "utf8");
+  } catch (error) {
+    console.error("opengraph-image: logo not found; card will render without it.", error);
+    return null;
+  }
+})();
+const logoDataUri = logo ? `data:image/svg+xml;base64,${Buffer.from(logo).toString("base64")}` : null;
 
 /**
  * Satori has no access to next/font, so the card would otherwise render in its default
@@ -78,7 +88,7 @@ export default async function OpenGraphImage() {
         </div>
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoDataUri} alt="" width={260} height={289} />
+        {logoDataUri ? <img src={logoDataUri} alt="" width={260} height={289} /> : null}
       </div>
     ),
     { ...size, ...(fonts.length > 0 ? { fonts } : {}) },

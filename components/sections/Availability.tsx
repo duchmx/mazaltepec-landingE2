@@ -1,10 +1,26 @@
 import PlotMap from "@/components/plot-map/PlotMap";
+import WhatsAppLink from "@/components/WhatsAppLink";
 import { getLots } from "@/lib/lot-status";
-import { eyebrow, headline } from "@/components/ui";
+import { buttonPrimary, eyebrow, headline } from "@/components/ui";
 import { availability, nav } from "@/content/copy";
+import type { Lot } from "@/data/lots";
+
+/**
+ * The database is the only source of truth for lot status (lib/lot-status.ts), so a read
+ * that fails must not invent statuses — but it also must not take the rest of the page down
+ * with it. Caught here, once, so every other section still renders when this one can't.
+ */
+async function safeGetLots(): Promise<Lot[] | null> {
+  try {
+    return await getLots();
+  } catch (error) {
+    console.error("Availability: live lot status unavailable.", error);
+    return null;
+  }
+}
 
 export default async function Availability() {
-  const lots = await getLots();
+  const lots = await safeGetLots();
 
   return (
     // No bottom padding at any width: the plan's own bottom edge is the end of the section.
@@ -17,15 +33,30 @@ export default async function Availability() {
       // and silently break the left column's position: sticky. `clip` does not.
       className="overflow-x-clip bg-cream-50 pt-16 sm:pt-24 lg:pt-0"
     >
-      <PlotMap
-        lots={lots}
-        header={
-          <div>
-            <p className={eyebrow}>{availability.eyebrow}</p>
-            <h2 className={headline}>{availability.headline}</h2>
+      {lots ? (
+        <PlotMap
+          lots={lots}
+          header={
+            <div>
+              <p className={eyebrow}>{availability.eyebrow}</p>
+              <h2 className={headline}>{availability.headline}</h2>
+            </div>
+          }
+        />
+      ) : (
+        <div className="px-5 pl-(--page-gutter) sm:px-8 sm:pl-(--page-gutter)">
+          <p className={eyebrow}>{availability.eyebrow}</p>
+          <h2 className={headline}>{availability.headline}</h2>
+          <p className="mt-4 max-w-md text-lg leading-relaxed text-ink-600">
+            {availability.loadError}
+          </p>
+          <div className="mt-6">
+            <WhatsAppLink intent="availableLots" source="availability-error" className={buttonPrimary}>
+              {availability.detail.ctaUnavailable}
+            </WhatsAppLink>
           </div>
-        }
-      />
+        </div>
+      )}
     </section>
   );
 }

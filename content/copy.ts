@@ -76,6 +76,8 @@ export const availability = {
     emptyState: "Selecciona un lote del plano para ver su superficie.",
     unavailable: "Este lote ya no está disponible.",
   },
+  /** Shown instead of the plan when the live database can't be reached — never a guess. */
+  loadError: "No pudimos cargar la disponibilidad en este momento. Contáctanos por WhatsApp.",
 } as const;
 
 export const payment = {

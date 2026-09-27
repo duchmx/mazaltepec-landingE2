@@ -8,10 +8,14 @@ import { getLots } from "@/lib/lot-status";
 
 export default async function Visit() {
   // Same read as the plan — Next dedupes the request — so the picker never offers a lot
-  // the plan shows as taken.
-  const availableLotIds = (await getLots())
-    .filter((lot) => effectiveStatus(lot) === "disponible")
-    .map((lot) => lot.id);
+  // the plan shows as taken. If the live read fails, the picker falls back to its own
+  // free-text "other" option rather than guessing at availability (see LeadForm).
+  const availableLotIds = await getLots()
+    .then((lots) => lots.filter((lot) => effectiveStatus(lot) === "disponible").map((lot) => lot.id))
+    .catch((error) => {
+      console.error("Visit: live lot status unavailable; lot picker will offer none.", error);
+      return [];
+    });
 
   return (
     <section id={nav.visitAnchor} className="bg-cream-100">
