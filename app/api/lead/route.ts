@@ -1,10 +1,16 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { cleanUtm, intakePayload, type Lead } from "@/lib/lead";
 import { isValidMexicanPhone, normalizePhone } from "@/lib/phone";
 
 /**
- * Forwards the lead to n8n. The webhook URL is server-only (`N8N_LEAD_WEBHOOK_URL`).
- * With no URL configured the lead is logged and the visitor still sees the confirmation —
- * the page must never break because an env var is missing.
+ * Delivers the lead to the admin CRM (`ADMIN_INTAKE_URL` + `INTAKE_SECRET`), and to n8n
+ * (`N8N_LEAD_WEBHOOK_URL`) when that is set too. All three are server-only.
+ *
+ * The visitor sees the confirmation when at least one destination accepted the lead, or
+ * when none is configured — the page must never break because an env var is missing.
+ * Every failure is logged with the full lead, so nothing is lost that the logs can't
+ * give back.
  */
 
 export const runtime = "nodejs";
@@ -21,6 +27,19 @@ type LeadBody = {
 
 function asString(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
+async function post(label: string, url: string, headers: Record<string, string>, body: unknown) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...headers },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`${label} answered ${response.status} ${detail.slice(0, 300)}`);
+  }
 }
 
 export async function POST(request: Request) {
@@ -43,38 +62,46 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false }, { status: 422 });
   }
 
-  const lead = {
+  const lead: Lead = {
+    id: randomUUID(),
     name,
     phone: normalizePhone(phone),
-    phoneRaw: phone,
     lot: asString(body.lot, 20) || null,
     advisor: asString(body.advisor, 24) || null,
-    utm: typeof body.utm === "object" && body.utm !== null ? body.utm : {},
+    utm: cleanUtm(body.utm),
     pageUrl: asString(body.pageUrl, 500),
-    source: "e2.mazaltepec.com",
     submittedAt: new Date().toISOString(),
   };
 
+  const deliveries: Promise<void>[] = [];
+
+  const intakeUrl = process.env.ADMIN_INTAKE_URL;
+  const intakeSecret = process.env.INTAKE_SECRET;
+  if (intakeUrl && intakeSecret) {
+    deliveries.push(post("admin intake", intakeUrl, { "x-intake-secret": intakeSecret }, intakePayload(lead)));
+  } else if (intakeUrl || intakeSecret) {
+    console.error("ADMIN_INTAKE_URL and INTAKE_SECRET must both be set; lead not sent to the CRM", lead);
+  }
+
   const webhookUrl = process.env.N8N_LEAD_WEBHOOK_URL;
-  if (!webhookUrl) {
-    console.error("N8N_LEAD_WEBHOOK_URL is not set; lead not forwarded", lead);
+  if (webhookUrl) {
+    deliveries.push(
+      post("n8n webhook", webhookUrl, {}, { ...lead, phoneRaw: phone, source: "e2.mazaltepec.com" }),
+    );
+  }
+
+  if (deliveries.length === 0) {
+    console.error("No lead destination is configured; lead not forwarded", lead);
     return NextResponse.json({ ok: true, forwarded: false });
   }
 
-  try {
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(lead),
-      signal: AbortSignal.timeout(8000),
-    });
+  const results = await Promise.allSettled(deliveries);
+  const failures = results.filter((result) => result.status === "rejected");
+  for (const failure of failures) {
+    console.error("Lead delivery failed", (failure as PromiseRejectedResult).reason, lead);
+  }
 
-    if (!response.ok) {
-      console.error("n8n webhook rejected the lead", response.status, lead);
-      return NextResponse.json({ ok: false }, { status: 502 });
-    }
-  } catch (error) {
-    console.error("n8n webhook request failed", error, lead);
+  if (failures.length === results.length) {
     return NextResponse.json({ ok: false }, { status: 502 });
   }
 

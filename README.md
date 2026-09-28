@@ -32,12 +32,15 @@ Vercel under Project → Settings → Environment Variables. See `.env.example`.
 
 | Variable | Scope | Missing behavior |
 |---|---|---|
-| `N8N_LEAD_WEBHOOK_URL` | server only | The lead is logged to the server console; the visitor still sees the confirmation. |
+| `ADMIN_INTAKE_URL` | server only | `https://app.mazaltepec.com/api/intake/form`. With `INTAKE_SECRET`, every lead becomes a contact + deal in the admin CRM. Missing: the lead is not sent there. |
+| `INTAKE_SECRET` | server only | The same value as `INTAKE_SECRET` in the admin app's Vercel project. |
+| `N8N_LEAD_WEBHOOK_URL` | server only | Optional extra copy of each lead to n8n. With no destination set at all, the lead is logged to the server console and the visitor still sees the confirmation. |
 | `NEXT_PUBLIC_META_PIXEL_ID` | public | Pixel is not loaded; tracking calls are no-ops. |
 | `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | public | gtag is not loaded; tracking calls are no-ops. |
 
-`N8N_LEAD_WEBHOOK_URL` is only ever read inside `app/api/lead/route.ts` and never reaches
-the browser. Do not prefix it with `NEXT_PUBLIC_`.
+These three are only ever read inside `app/api/lead/route.ts` and never reach the browser.
+Do not prefix them with `NEXT_PUBLIC_`. The visitor sees the confirmation when at least
+one destination accepts the lead; every failed delivery is logged with the full lead.
 
 ---
 
